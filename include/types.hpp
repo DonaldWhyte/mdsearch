@@ -48,6 +48,20 @@ namespace mdsearch
 	typedef float Real;
 	typedef std::vector<Real> RealList;
 
+	/* Defined error tolerance for floating point comparisons. */
+	static const Real EPSILON = 1.0e-7;
+	/* Compare two reals subject to an error tolerance.
+	 * Return -1, 0, 1 respectively if 't' is less than,
+	 * approximately equal to, or greater than, 'base'. */
+	inline int compare(Real t, Real base)
+	{
+		if (std::fabs(t - base) < EPSILON)
+			return 0;
+		if (t < base)
+			return -1;
+		return 1;
+	}
+
 	/* Structure representing points in D-dimensional space. */
 	template <int D>
 	struct Point
