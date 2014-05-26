@@ -1,6 +1,7 @@
 #include <iostream>
 #include "dataset.hpp"
 #include "kdtree.hpp"
+#include "multigrid.hpp"
 
 using namespace mdsearch;
 
@@ -33,7 +34,7 @@ PointList generateRandomPoints(unsigned int numPoints)
 template<typename STRUCT_TYPE>
 bool testStructureOperations(STRUCT_TYPE* structure, const PointList& points)
 {
-	// NOTE; Tests assume all given points are UNIQUE!!!
+	// NOTE: Tests assume all given points are UNIQUE!!!
 
 	// Ensure structure is entirely empty
 	for (unsigned int i = 0; (i < points.size()); i++)
@@ -97,9 +98,12 @@ int main(int argc, char* argv[])
 	srand(time(NULL)); // seed generator to get different points every time!!
 	Dataset<NUM_DIMENSIONS> dataset;
 	dataset.load( generateRandomPoints(NUM_TEST_POINTS) );
+	Boundary<NUM_DIMENSIONS> boundary = dataset.computeBoundary();
 
 	KDTree<NUM_DIMENSIONS> kdTree;
 	testStructure< KDTree<NUM_DIMENSIONS> >("kd-tree", &kdTree, dataset.getPoints());
+	Multigrid<NUM_DIMENSIONS> multigrid(boundary);
+	testStructure< Multigrid<NUM_DIMENSIONS> >("multigrid", &multigrid, dataset.getPoints());
 
 	return 0;
 }

@@ -187,7 +187,7 @@ namespace mdsearch
 
 	};
 
-	/* std::ostream stream operator overloads for easily printing points and boundaries. */
+	/* std::ostream stream operator overloads for easy display of points and boundaries. */
 	template<int D>
 	std::ostream& operator<<(std::ostream& out, const Point<D>& point)
 	{
@@ -213,7 +213,12 @@ namespace mdsearch
 		out << boundary[D - 1];
 		out << ")";
 		return out;;
-	}	
+	}
+
+	// Data type used for one-dimensional hash values of points.
+	// All hash-based index structures should use this, unless there's
+	// a good reason not to.
+	typedef long HashType;
 
 }
 
