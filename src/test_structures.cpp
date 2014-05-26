@@ -3,6 +3,7 @@
 #include "kdtree.hpp"
 #include "multigrid.hpp"
 #include "bithash.hpp"
+#include "pyramidtree.hpp"
 
 using namespace mdsearch;
 
@@ -42,7 +43,7 @@ bool testStructureOperations(STRUCT_TYPE* structure, const PointList& points)
 	{
 		if (structure->query(points[i]))
 		{
-			std::cout << "False positive point query with point " << i << ":" << points[i] << std::endl;
+			std::cout << "False positive point query with point " << i << ": " << points[i] << std::endl;
 			return false;
 		}
 	}
@@ -57,7 +58,7 @@ bool testStructureOperations(STRUCT_TYPE* structure, const PointList& points)
 	{
 		if (!structure->query(points[i]))
 		{
-			std::cout << "Failed query with point " << i << ":" << points[i] << std::endl;
+			std::cout << "Failed query with point " << i << ": " << points[i] << std::endl;
 			return false;
 		}
 	}
@@ -68,13 +69,13 @@ bool testStructureOperations(STRUCT_TYPE* structure, const PointList& points)
 		{
 			if (structure->query(points[i]))
 			{
-				std::cout << "Failed removal (never actually removed) with point" << i << ":" << points[i] << std::endl;	
+				std::cout << "Failed removal (never actually removed) with point" << i << ": " << points[i] << std::endl;	
 				return false;
 			}
 		}
 		else
 		{
-			std::cout << "Failed removal (returned failure signal) with point " << i << ":" << points[i] << std::endl;
+			std::cout << "Failed removal (returned failure signal) with point " << i << ": " << points[i] << std::endl;
 			return false;
 		}
 	}
@@ -107,6 +108,8 @@ int main(int argc, char* argv[])
 	testStructure< Multigrid<NUM_DIMENSIONS> >("multigrid", &multigrid, dataset.getPoints());
 	BitHash<NUM_DIMENSIONS> bitHash;
 	testStructure< BitHash<NUM_DIMENSIONS> >("bithash", &bitHash, dataset.getPoints());
+	PyramidTree<NUM_DIMENSIONS> pyramidTree(boundary);
+	testStructure< PyramidTree<NUM_DIMENSIONS> >("pyramid_tree", &pyramidTree, dataset.getPoints());
 
 	return 0;
 }
