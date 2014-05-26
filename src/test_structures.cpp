@@ -1,5 +1,6 @@
 #include <iostream>
 #include "types.hpp"
+#include "util.hpp"
 
 using namespace mdsearch;
 
@@ -13,6 +14,10 @@ int main(int argc, char* argv[])
 
 	std::cout << point << " " << point.sum() << std::endl;
 	std::cout << boundary << std::endl;
+
+	std::cout << "0 == 0 -> " << compare(0, 0) << std::endl;
+	std::cout << "1 > 0 -> " << compare(1, 0) << std::endl;
+	std::cout << "-1 < 0 -> " << compare(-1, 0) << std::endl;
 
 	return 0;
 }
