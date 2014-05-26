@@ -17,15 +17,15 @@ set (EXECUTABLE_OUTPUT_PATH ${BUILD_DIR})
 set (LIBRARY_OUTPUT_PATH ${BUILD_DIR})
 
 # Search for Boost library
-set(Boost_USE_STATIC_LIBS ON) 
-set(Boost_USE_MULTITHREADED ON)  
-set(Boost_USE_STATIC_RUNTIME OFF) 
-find_package(Boost 1.41.0 COMPONENTS program_options REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-set(BOOST_LIBRARYDIR ${BOOST_ROOT}/stage/lib/)
+set (Boost_USE_STATIC_LIBS ON) 
+set (Boost_USE_MULTITHREADED ON)  
+set (Boost_USE_STATIC_RUNTIME OFF) 
+find_package (Boost 1.41.0 COMPONENTS program_options REQUIRED)
+include_directories (${Boost_INCLUDE_DIRS})
+set (BOOST_LIBRARYDIR ${BOOST_ROOT}/stage/lib/)
 
 # Set compiler flags
-set( EXTRA_CXX_COMPILER_FLAGS "-O3" )
+set ( EXTRA_CXX_COMPILER_FLAGS "-O3" )
 
 #------------------------------------------------------------------------------
 
@@ -33,10 +33,15 @@ set( EXTRA_CXX_COMPILER_FLAGS "-O3" )
 include_directories ("include")
 
 # Executable for testing implemented structures
-add_executable(mdsearch_tests
+add_executable (mdsearch_core_tests
+	# Source files
+	"src/test_core.cpp"
+)
+add_executable (mdsearch_structure_tests
 	# Source files
 	"src/test_structures.cpp"
 )
-target_link_libraries ( mdsearch_tests rt )
+target_link_libraries ( mdsearch_core_tests rt )
+target_link_libraries ( mdsearch_structure_tests rt )
 
 #------------------------------------------------------------------------------
