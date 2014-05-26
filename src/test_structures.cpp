@@ -2,6 +2,7 @@
 #include "dataset.hpp"
 #include "kdtree.hpp"
 #include "multigrid.hpp"
+#include "bithash.hpp"
 
 using namespace mdsearch;
 
@@ -104,6 +105,8 @@ int main(int argc, char* argv[])
 	testStructure< KDTree<NUM_DIMENSIONS> >("kd-tree", &kdTree, dataset.getPoints());
 	Multigrid<NUM_DIMENSIONS> multigrid(boundary);
 	testStructure< Multigrid<NUM_DIMENSIONS> >("multigrid", &multigrid, dataset.getPoints());
+	BitHash<NUM_DIMENSIONS> bitHash;
+	testStructure< BitHash<NUM_DIMENSIONS> >("bithash", &bitHash, dataset.getPoints());
 
 	return 0;
 }
