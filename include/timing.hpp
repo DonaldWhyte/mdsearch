@@ -37,29 +37,29 @@ THE SOFTWARE.
 
 // Interval timer used depends on platform
 #if defined(_WIN32)
-	#include <time.h>
+    #include <time.h>
 #elif defined(__unix__)
-	#include <sys/time.h>
+    #include <sys/time.h>
 #else
-	#error No timing mechanism supported for this platform
+    #error No timing mechanism supported for this platform
 #endif
 
 namespace mdsearch
 {
 
-	/* Return current time in seconds. */
-	double getTime()
-	{
-	#if defined(_WIN32)
-		return static_cast<double>(time(NULL)); // in seconds already
-	#elif defined(__unix__)
-		timespec ts;
-		clock_gettime(CLOCK_REALTIME, &ts); 
-		return static_cast<double>(ts.tv_sec) + (static_cast<double>(ts.tv_nsec) / 1000000000.0);
-	#else
-		return 0.0;
-	#endif
-	}
+    /* Return current time in seconds. */
+    double getTime()
+    {
+    #if defined(_WIN32)
+        return static_cast<double>(time(NULL)); // in seconds already
+    #elif defined(__unix__)
+        timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts); 
+        return static_cast<double>(ts.tv_sec) + (static_cast<double>(ts.tv_nsec) / 1000000000.0);
+    #else
+        return 0.0;
+    #endif
+    }
 }
 
 #endif

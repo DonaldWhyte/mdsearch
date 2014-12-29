@@ -5,8 +5,8 @@ mdsearch - Lightweight C++ library implementing a collection of
 
 File:        pyramidtree.hpp
 Description: Implements the Pyramid Tree from Berchtold et al.'s 1998 paper.
-			 Instead of using a B+-tree as the underlying one-dimensional index
-			 structure, a hash map is used instead.
+             Instead of using a B+-tree as the underlying one-dimensional index
+             structure, a hash map is used instead.
 
 *******************************************************************************
 
@@ -47,78 +47,78 @@ THE SOFTWARE.
 namespace mdsearch
 {
 
-	template<int D>
-	class PyramidTree : public HashStructure<D>
-	{
+    template<int D>
+    class PyramidTree : public HashStructure<D>
+    {
 
-	public:
-		PyramidTree(const Boundary<D>& boundary) : boundary(boundary)
-		{
-			// Compute the interval between buckets 
-			bucketInterval = static_cast<Real>( MAX_BUCKET_NUMBER / (D * 2) );
-			bucketInterval = floor(bucketInterval);
-		}
+    public:
+        PyramidTree(const Boundary<D>& boundary) : boundary(boundary)
+        {
+            // Compute the interval between buckets 
+            bucketInterval = static_cast<Real>( MAX_BUCKET_NUMBER / (D * 2) );
+            bucketInterval = floor(bucketInterval);
+        }
 
-		void clear(const Boundary<D>& newBoundary)
-		{
-			HashStructure<D>::clear();
-			boundary = newBoundary;
-		}
+        void clear(const Boundary<D>& newBoundary)
+        {
+            HashStructure<D>::clear();
+            boundary = newBoundary;
+        }
 
-	protected:
-		static const Real MAX_BUCKET_NUMBER = 30000000000;
+    protected:
+        static const Real MAX_BUCKET_NUMBER = 30000000000;
 
-		/* Normalise value into 0-1 range based on min-max interval. */
-		inline Real normaliseCoord(Real coord, Real min, Real max)
-		{
-			return (coord - min) / (max - min);
-		}
-		
-		/* Compute Pyramid height of a point, for a specific pair of
-		 * pyramid (that are both for the same dimension). */
-		inline Real pyramidHeight(Real coord, Real min, Real max)
-		{
-			return std::abs(0.5f - normaliseCoord(coord, min, max));
-		}
+        /* Normalise value into 0-1 range based on min-max interval. */
+        inline Real normaliseCoord(Real coord, Real min, Real max)
+        {
+            return (coord - min) / (max - min);
+        }
+        
+        /* Compute Pyramid height of a point, for a specific pair of
+         * pyramid (that are both for the same dimension). */
+        inline Real pyramidHeight(Real coord, Real min, Real max)
+        {
+            return std::abs(0.5f - normaliseCoord(coord, min, max));
+        }
 
-		/* Compute pyramid value of the given point, using the original Pyramid-technique. */
-		virtual HashType hashPoint(const Point<D>& p)
-		{
-			int index = 0;
-			int dMax = 0;
-			Real dMaxHeight = pyramidHeight(p[0], boundary[0].min, boundary[0].max);
-			for (int d = 1; (d < D); d++)
-			{
-				Real currentHeight = pyramidHeight(p[d], boundary[d].min, boundary[d].max);
-				#ifdef BOUNDARY_VALUE_HACK
-					if (compare(currentHeight, 0.5f) == 0)
-						continue;
-				#endif
+        /* Compute pyramid value of the given point, using the original Pyramid-technique. */
+        virtual HashType hashPoint(const Point<D>& p)
+        {
+            int index = 0;
+            int dMax = 0;
+            Real dMaxHeight = pyramidHeight(p[0], boundary[0].min, boundary[0].max);
+            for (int d = 1; (d < D); d++)
+            {
+                Real currentHeight = pyramidHeight(p[d], boundary[d].min, boundary[d].max);
+                #ifdef BOUNDARY_VALUE_HACK
+                    if (compare(currentHeight, 0.5f) == 0)
+                        continue;
+                #endif
 
-				if (dMaxHeight < currentHeight)
-				{
-					dMax = d;
-					dMaxHeight = currentHeight;
-				}
-			}
+                if (dMaxHeight < currentHeight)
+                {
+                    dMax = d;
+                    dMaxHeight = currentHeight;
+                }
+            }
 
-			if (normaliseCoord(p[dMax], boundary[dMax].min, boundary[dMax].max) < 0.5f)
-				index = dMax; // pyramid lower than central point
-			else 
-				index = dMax + D; // pyramid higher than central point
+            if (normaliseCoord(p[dMax], boundary[dMax].min, boundary[dMax].max) < 0.5f)
+                index = dMax; // pyramid lower than central point
+            else 
+                index = dMax + D; // pyramid higher than central point
 
-			return (index + dMaxHeight) * bucketInterval;			
-		}
+            return (index + dMaxHeight) * bucketInterval;            
+        }
 
 
 
-		// Entire region of space the Pyramid tree covers
-		// (points outside this region are ignored)
-		Boundary<D> boundary;
-		// Interval between buckets
-		Real bucketInterval;
+        // Entire region of space the Pyramid tree covers
+        // (points outside this region are ignored)
+        Boundary<D> boundary;
+        // Interval between buckets
+        Real bucketInterval;
 
-	};
+    };
 
 }
 

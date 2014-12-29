@@ -43,182 +43,182 @@ THE SOFTWARE.
 namespace mdsearch
 {
 
-	// Real numbers are the smallest component of multi-dimensional search.
-	// This typedef defines which data type is used to represent these components
-	typedef float Real;
-	typedef std::vector<Real> RealList;
+    // Real numbers are the smallest component of multi-dimensional search.
+    // This typedef defines which data type is used to represent these components
+    typedef float Real;
+    typedef std::vector<Real> RealList;
 
-	/* Defined error tolerance for floating point comparisons. */
-	static const Real EPSILON = 1.0e-7;
-	/* Compare two reals subject to an error tolerance.
-	 * Return -1, 0, 1 respectively if 't' is less than,
-	 * approximately equal to, or greater than, 'base'. */
-	inline int compare(Real t, Real base)
-	{
-		if (std::fabs(t - base) < EPSILON)
-			return 0;
-		if (t < base)
-			return -1;
-		return 1;
-	}
+    /* Defined error tolerance for floating point comparisons. */
+    static const Real EPSILON = 1.0e-7;
+    /* Compare two reals subject to an error tolerance.
+     * Return -1, 0, 1 respectively if 't' is less than,
+     * approximately equal to, or greater than, 'base'. */
+    inline int compare(Real t, Real base)
+    {
+        if (std::fabs(t - base) < EPSILON)
+            return 0;
+        if (t < base)
+            return -1;
+        return 1;
+    }
 
-	/* Structure representing points in D-dimensional space. */
-	template <int D>
-	struct Point
-	{
+    /* Structure representing points in D-dimensional space. */
+    template <int D>
+    struct Point
+    {
 
-		/* Constructs new point, but does not initialise its coordinates.
-		 * The initial values of the coordinates are therefore undefined. */
-		Point()
-		{
-		}
+        /* Constructs new point, but does not initialise its coordinates.
+         * The initial values of the coordinates are therefore undefined. */
+        Point()
+        {
+        }
 
-		/* Constructs new point, initialising each coordinate
-		 * to the given real value. */
-		Point(Real initialValue)
-		{
-			for (unsigned int d = 0; (d < D); d++)
-			{
-				values[d] = initialValue;
-			}
-		}
+        /* Constructs new point, initialising each coordinate
+         * to the given real value. */
+        Point(Real initialValue)
+        {
+            for (unsigned int d = 0; (d < D); d++)
+            {
+                values[d] = initialValue;
+            }
+        }
 
-		/* Use given array of real values to initialise point's coordinates.
-		 * ASSUMPTION: 'initialValues' points to an array containing D
-		 * real numbers. */
-		Point(const Real* initialValues)
-		{
-			memcpy(values, initialValues, sizeof(Real) * D);
-		}
+        /* Use given array of real values to initialise point's coordinates.
+         * ASSUMPTION: 'initialValues' points to an array containing D
+         * real numbers. */
+        Point(const Real* initialValues)
+        {
+            memcpy(values, initialValues, sizeof(Real) * D);
+        }
 
-		/* Point equality and inequality. */
-		inline bool operator==(const Point& other) const
-		{
-			for (unsigned int d = 0; (d < D); d++)
-				if (compare(values[d], other.values[d]) != 0) 
-					return false;
-			return true;
-		}
-		inline bool operator!=(const Point& other) const
-		{
-			return !(*this == other);
-		}
+        /* Point equality and inequality. */
+        inline bool operator==(const Point& other) const
+        {
+            for (unsigned int d = 0; (d < D); d++)
+                if (compare(values[d], other.values[d]) != 0) 
+                    return false;
+            return true;
+        }
+        inline bool operator!=(const Point& other) const
+        {
+            return !(*this == other);
+        }
 
-		/* Individual coordinate accessors. */
-		inline Real operator[](int index) const
-		{
-			return values[index];
-		}
-		inline Real& operator[](int index)
-		{
-			return values[index];
-		}
+        /* Individual coordinate accessors. */
+        inline Real operator[](int index) const
+        {
+            return values[index];
+        }
+        inline Real& operator[](int index)
+        {
+            return values[index];
+        }
 
-		/* Compute sum of all coordinates of point. */
-		inline Real sum() const
-		{
-			Real s = 0;
-			for (unsigned int d = 0; (d < D); d++)
-				s += values[d];
-			return s;	
-		}
+        /* Compute sum of all coordinates of point. */
+        inline Real sum() const
+        {
+            Real s = 0;
+            for (unsigned int d = 0; (d < D); d++)
+                s += values[d];
+            return s;    
+        }
 
-		Real values[D];
+        Real values[D];
 
-	};
+    };
 
-	/* One-dimensional interval. */
-	struct Interval
-	{
+    /* One-dimensional interval. */
+    struct Interval
+    {
 
-		/* Instantiates an interval, but does not initialise the
-		 * minimum and maximum values. */
-		Interval()
-		{
-		}
+        /* Instantiates an interval, but does not initialise the
+         * minimum and maximum values. */
+        Interval()
+        {
+        }
 
-		/* Instantiates an interval, initialising its min and max
-		 * bounds using the given values. */
-		Interval(Real min, Real max) : min(min), max(max)
-		{
-		}
+        /* Instantiates an interval, initialising its min and max
+         * bounds using the given values. */
+        Interval(Real min, Real max) : min(min), max(max)
+        {
+        }
 
-		// Lower and upper bounds of the interval
-		Real min;
-		Real max;
+        // Lower and upper bounds of the interval
+        Real min;
+        Real max;
 
-	};
+    };
 
-	/* Boundary in D_dimensional space. This structure contains D
-	 * one-dimensional intervals. */
-	template<int D>
-	struct Boundary
-	{
+    /* Boundary in D_dimensional space. This structure contains D
+     * one-dimensional intervals. */
+    template<int D>
+    struct Boundary
+    {
 
-		/* Constructs new boundary, but does not initialise its intervals.
-		 * The initial values of the intervals are therefore undefined. */
-		Boundary()
-		{
-		}
+        /* Constructs new boundary, but does not initialise its intervals.
+         * The initial values of the intervals are therefore undefined. */
+        Boundary()
+        {
+        }
 
-		/* Constructs new boundary, initialising each interval to the given interval. */
-		Boundary(const Interval& initialInterval)
-		{
-			for (unsigned int d = 0; (d < D); d++)
-			{
-				intervals[d] = initialInterval;
-			}
-		}
+        /* Constructs new boundary, initialising each interval to the given interval. */
+        Boundary(const Interval& initialInterval)
+        {
+            for (unsigned int d = 0; (d < D); d++)
+            {
+                intervals[d] = initialInterval;
+            }
+        }
 
-		/* Use given array of intervals to initialise boundary's intervals.
-		 * ASSUMPTION: 'initialIntervals' points to an array containing D
-		 * Interval objects. */		
-		Boundary(const Interval* initialIntervals)
-		{
-			memcpy(intervals, initialIntervals, sizeof(Interval) * D);
-		}
+        /* Use given array of intervals to initialise boundary's intervals.
+         * ASSUMPTION: 'initialIntervals' points to an array containing D
+         * Interval objects. */        
+        Boundary(const Interval* initialIntervals)
+        {
+            memcpy(intervals, initialIntervals, sizeof(Interval) * D);
+        }
 
-		// Accessor/mutator for individual intervals
-		inline const Interval& operator[](int d) const { return intervals[d]; }
-		inline Interval& operator[](int d) { return intervals[d]; }
+        // Accessor/mutator for individual intervals
+        inline const Interval& operator[](int d) const { return intervals[d]; }
+        inline Interval& operator[](int d) { return intervals[d]; }
 
-		// Minimum and maximum values for each dimension
-		Interval intervals[D];
+        // Minimum and maximum values for each dimension
+        Interval intervals[D];
 
-	};
+    };
 
-	/* std::ostream stream operator overloads for easy display of points and boundaries. */
-	template<int D>
-	std::ostream& operator<<(std::ostream& out, const Point<D>& point)
-	{
-		out << "(";
-		for (int i = 0; (i < D - 1); i++)
-			out << point[i] << ",";
-		out << point[D - 1] << ")";
-		return out;
-	}
+    /* std::ostream stream operator overloads for easy display of points and boundaries. */
+    template<int D>
+    std::ostream& operator<<(std::ostream& out, const Point<D>& point)
+    {
+        out << "(";
+        for (int i = 0; (i < D - 1); i++)
+            out << point[i] << ",";
+        out << point[D - 1] << ")";
+        return out;
+    }
 
-	std::ostream& operator<<(std::ostream& out, const Interval& interval)
-	{
-		out << "[" << interval.min << ":" << interval.max << "]";
-		return out;
-	}
+    std::ostream& operator<<(std::ostream& out, const Interval& interval)
+    {
+        out << "[" << interval.min << ":" << interval.max << "]";
+        return out;
+    }
 
-	template<int D>
-	std::ostream& operator<<(std::ostream& out, const Boundary<D>& boundary)
-	{
-		out << "(";
-		for (unsigned int d = 0; (d < D - 1); d++)
-			out << boundary[d] << ",";
-		out << boundary[D - 1];
-		out << ")";
-		return out;;
-	}
+    template<int D>
+    std::ostream& operator<<(std::ostream& out, const Boundary<D>& boundary)
+    {
+        out << "(";
+        for (unsigned int d = 0; (d < D - 1); d++)
+            out << boundary[d] << ",";
+        out << boundary[D - 1];
+        out << ")";
+        return out;;
+    }
 
-	// Data type used for one-dimensional hash values of points.
-	// All hash-based index structures should use this, unless there's
-	// a good reason not to.
-	typedef long HashType;
+    // Data type used for one-dimensional hash values of points.
+    // All hash-based index structures should use this, unless there's
+    // a good reason not to.
+    typedef long HashType;
 
 }
 

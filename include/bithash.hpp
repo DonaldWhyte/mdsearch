@@ -5,17 +5,17 @@ mdsearch - Lightweight C++ library implementing a collection of
 
 File:        bithash.hpp
 Description: Implements a hash-based index structure that hashes points based
-			 on the bit patterns of their coordinates.
+             on the bit patterns of their coordinates.
 
-			 Generally performs insertions, deletions and point queries very
-			 fast, but can be unreliable. Since hashing is based on the point's
-			 bits, floating point drift could mean that a point appears as if
-			 it is stored in the structure when it shouldn't be (and vice
-			 versa).
+             Generally performs insertions, deletions and point queries very
+             fast, but can be unreliable. Since hashing is based on the point's
+             bits, floating point drift could mean that a point appears as if
+             it is stored in the structure when it shouldn't be (and vice
+             versa).
 
-			 Therefore, this should only be used for applications where you can
-			 be confident that the bit patterns of two identical points will be
-			 the same, and floating point rounding errors will not appear.
+             Therefore, this should only be used for applications where you can
+             be confident that the bit patterns of two identical points will be
+             the same, and floating point rounding errors will not appear.
 
 *******************************************************************************
 
@@ -52,24 +52,24 @@ THE SOFTWARE.
 namespace mdsearch
 {
 
-	template<int D>
-	class BitHash : public HashStructure<D>
-	{
+    template<int D>
+    class BitHash : public HashStructure<D>
+    {
 
-	protected:
-		virtual HashType hashPoint(const Point<D>& p)
-		{
-			size_t seed = 0;
-			const Real* coord = &(p.values[0]);
-			const Real* end = coord + D;
-			for (coord; (coord != end); ++coord)
-			{
-				boost::hash_combine(seed, *coord);
-			}
-			return seed;			
-		}
+    protected:
+        virtual HashType hashPoint(const Point<D>& p)
+        {
+            size_t seed = 0;
+            const Real* coord = &(p.values[0]);
+            const Real* end = coord + D;
+            for (coord; (coord != end); ++coord)
+            {
+                boost::hash_combine(seed, *coord);
+            }
+            return seed;            
+        }
 
-	};
+    };
 
 }
 

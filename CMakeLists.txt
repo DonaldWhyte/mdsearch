@@ -34,12 +34,12 @@ include_directories ("include")
 
 # Executable for testing implemented structures
 add_executable (mdsearch_core_tests
-	# Source files
-	"src/test_core.cpp"
+    # Source files
+    "src/test_core.cpp"
 )
 add_executable (mdsearch_structure_tests
-	# Source files
-	"src/test_structures.cpp"
+    # Source files
+    "src/test_structures.cpp"
 )
 target_link_libraries ( mdsearch_core_tests rt )
 target_link_libraries ( mdsearch_structure_tests rt )
