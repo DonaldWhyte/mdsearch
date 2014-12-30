@@ -41,60 +41,64 @@ THE SOFTWARE.
 namespace mdsearch
 {
 
-    /* One-dimensional interval. */
+    /* Represents interval of values. Can be used with any type. */
     template<typename ELEM_TYPE>
     struct Interval
     {
 
-        /* Instantiates an interval, but does not initialise the
+        /** Instantiates an interval, but does not initialise the
          * minimum and maximum values. */
         Interval();
 
-        /* Instantiates an interval, initialising its min and max
+        /** Instantiates an interval, initialising its min and max
          * bounds using the given values. */
         Interval(ELEM_TYPE min, ELEM_TYPE max);
 
-        /* Output interval's min and max value to stream. */
+        /** Output interval's min and max value to stream. */
         void print(std::ostream& out) const;
 
-        // Lower and upper bounds of the interval
+        /** Lower bound of interval. */
         ELEM_TYPE min;
+        /** Upper bound of interval. */
         ELEM_TYPE max;
 
     };
 
-    /* Boundary in D-dimensional space. This structure contains D
-     * one-dimensional intervals. */
+    /** Represents spatial boundary with an arbitrary number of dimensions.
+     * Can use any type of element for the min/max boundary values, providing
+     * the type supports the operations required by Boundary's member
+     * functions. */
     template<int D, typename ELEM_TYPE>
     class Boundary
     {
 
     public:
-        /* Constructs new boundary, but does not initialise its intervals.
+        /** Constructs new boundary, but does not initialise its intervals.
          * The initial values of the intervals are undefined. */
         Boundary();
 
-        /* Constructs new boundary, initialising each interval to the given
+        /** Constructs new boundary, initialising each interval to the given
          * interval. */
         Boundary(const Interval<ELEM_TYPE>& initialInterval);
 
-        /* Use given array of intervals to initialise boundary's intervals.
+        /** Use given array of intervals to initialise boundary's intervals.
          * ASSUMPTION: 'initialIntervals' points to an array containing D
          * Interval objects. If this is not the case, the behaviour is
-         * undefined. */   
+         * undefined. */
         Boundary(const Interval<ELEM_TYPE>* initialIntervals);
 
-        /* Retrieve interval (min and max value) of dth dimension. */
+        /** Retrieve interval (min and max value) of dth dimension. */
         const Interval<ELEM_TYPE>& operator[](int d) const;
-        /* Retrieve modifiable reference to interval (min and max value) of
+
+        /** Retrieve modifiable reference to interval (min and max value) of
          * dth dimension. */
         Interval<ELEM_TYPE>& operator[](int d);
 
-        /* Output all the boundary's intervals to stream. */
+        /** Output all the boundary's intervals to stream. */
         void print(std::ostream& out) const;
 
     private:
-        // Minimum and maximum values for each dimension
+        /** Minimum and maximum values for each dimension. */
         Interval<ELEM_TYPE> intervals[D];
 
     };
@@ -114,7 +118,7 @@ namespace mdsearch
     inline
     void Interval<ELEM_TYPE>::print(std::ostream& out) const
     {
-        out << "[" << min << ":" << max << "]";    
+        out << "[" << min << ":" << max << "]";
     }
 
     template<int D, typename ELEM_TYPE>
@@ -167,12 +171,12 @@ namespace mdsearch
     }
 
     template<typename ELEM_TYPE>
-    std::ostream& operator<<(std::ostream& out, 
+    std::ostream& operator<<(std::ostream& out,
                              const Interval<ELEM_TYPE>& interval)
     {
         interval.print(out);
         return out;
-        
+
     }
 
     template<int D, typename ELEM_TYPE>

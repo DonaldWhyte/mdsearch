@@ -42,47 +42,53 @@ THE SOFTWARE.
 namespace mdsearch
 {
 
+    /** Represents spatial point with an arbitrary number of dimensions.
+     * Can store any type of element, providing it supports the operations
+     * required by Point's member functions. */
     template <int D, typename ELEM_TYPE>
     class Point
     {
 
     public:
-        /* Constructs new point, but does not initialise its coordinates.
+        /** Constructs new point, but does not initialise its coordinates.
          * The initial values of the coordinates are undefined. */
         Point();
 
-        /* Constructs new point, initialising each coordinate to the given
+        /** Constructs new point, initialising each coordinate to the given
          * real value. */
         Point(ELEM_TYPE initialValue);
 
-        /* Use given array of real values to initialise point's coordinates.
+        /** Use given array of real values to initialise point's coordinates.
          * ASSUMPTION: 'initialValues' points to an array containing D real
          * numbers. If this is not the case, the behaviour is undefined. */
         Point(const ELEM_TYPE* initialValues);
 
-        /* Point equality and inequality. */
-        inline bool operator==(const Point& other) const;
-        inline bool operator!=(const Point& other) const;
+        /** Return true if given point is equal to this one. */
+        bool operator==(const Point& other) const;
 
-        /* Retrieve value of dth coordinate. */
+        /** Return true if given point is not equal to this one. */
+        bool operator!=(const Point& other) const;
+
+        /** Retrieve value of dth coordinate. */
         ELEM_TYPE operator[](int d) const;
 
-        /* Retrieve modifiable reference to dth coordinate. */
+        /** Retrieve modifiable reference to dth coordinate. */
         ELEM_TYPE& operator[](int d);
 
-        /* Retrieve point's coordinates as unmodifiable C-style array. */
+        /** Retrieve point's coordinates as unmodifiable C-style array. */
         const ELEM_TYPE* asArray() const;
 
-        /* Retrieve point's coordinates as modifiable C-style array. */
+        /** Retrieve point's coordinates as modifiable C-style array. */
         ELEM_TYPE* asArray();
 
-        /* Compute sum of all coordinates of point. */
+        /** Compute sum of all coordinates of point. */
         ELEM_TYPE sum() const;
 
-        /* Output point's values to stream. */
+        /** Output point's values to stream. */
         void print(std::ostream& out) const;
 
     private:
+        /** Values of each coordinate. */
         ELEM_TYPE values[D];
 
     };
@@ -113,7 +119,7 @@ namespace mdsearch
     {
         for (unsigned int d = 0; (d < D); d++)
         {
-            if (compare(values[d], other.values[d]) != 0) 
+            if (compare(values[d], other.values[d]) != 0)
             {
                 return false;
             }
@@ -165,9 +171,9 @@ namespace mdsearch
         {
             s += values[d];
         }
-        return s;    
+        return s;
     }
- 
+
     template<int D, typename ELEM_TYPE>
     inline
     void Point<D, ELEM_TYPE>::print(std::ostream& out) const

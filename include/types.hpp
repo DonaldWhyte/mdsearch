@@ -41,17 +41,20 @@ THE SOFTWARE.
 namespace mdsearch
 {
 
-    // Real numbers are the smallest component of multi-dimensional search.
-    // This typedef defines which data type is used to represent these components
+    /**
+     * Real numbers are the smallest component of multi-dimensional search.
+     * This typedef defines which data type is used to represent these
+     * components. */
     typedef float Real;
-    typedef std::vector<Real> RealList;
 
-    /* Defined error tolerance for floating point comparisons. */
+    /**
+     * Defined error tolerance for floating point comparisons.
+     */
     static const Real EPSILON = 1.0e-7;
 
-    /* Compare two reals subject to an error tolerance.
-     * Return -1, 0, 1 respectively if 't' is less than,
-     * approximately equal to, or greater than, 'base'. */
+    /** Compare two reals subject to an error tolerance.
+     * Return -1, 0, 1 if 't' is less than, approximately equal to, or greater
+     * than, 'base' respectively. */
     inline int compare(Real t, Real base)
     {
         if (std::fabs(t - base) < EPSILON)
@@ -68,9 +71,9 @@ namespace mdsearch
         }
     }
 
-    // Data type used for one-dimensional hash values of points.
-    // All hash-based index structures should use this, unless there's
-    // a good reason not to.
+    /** Data type used for one-dimensional hash values of points.
+     * All hash-based index structures should use this, unless there's
+     * a very good reason not to. */
     typedef long HashType;
 
 }
