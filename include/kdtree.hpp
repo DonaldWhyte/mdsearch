@@ -37,8 +37,8 @@ THE SOFTWARE.
 #ifndef MDSEARCH_KDTREE_H
 #define MDSEARCH_KDTREE_H
 
-#include <algorithm>
 #include "types.hpp"
+#include <algorithm>
 
 namespace mdsearch
 {

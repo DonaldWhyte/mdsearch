@@ -1,6 +1,6 @@
-#include <iostream>
 #include "types.hpp"
 #include "timing.hpp"
+#include <iostream>
 
 using namespace mdsearch;
 

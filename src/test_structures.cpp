@@ -1,10 +1,10 @@
-#include <iostream>
 #include "dataset.hpp"
 #include "timing.hpp"
 #include "kdtree.hpp"
 #include "multigrid.hpp"
 #include "bithash.hpp"
 #include "pyramidtree.hpp"
+#include <iostream>
 
 using namespace mdsearch;
 
