@@ -42,6 +42,7 @@ THE SOFTWARE.
 #define MDSEARCH_HASHSTRUCT_H
 
 #include "types.hpp"
+#include "point.hpp"
 #include <boost/unordered_map.hpp>
 
 namespace mdsearch

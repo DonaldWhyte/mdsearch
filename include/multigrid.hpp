@@ -44,6 +44,8 @@ THE SOFTWARE.
 ******************************************************************************/
 
 #include "types.hpp"
+#include "point.hpp"
+#include "boundary.hpp"
 #include <stack>
 #include <boost/unordered_map.hpp>
 #include <algorithm>

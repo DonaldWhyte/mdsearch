@@ -37,12 +37,13 @@ THE SOFTWARE.
 #ifndef MDSEARCH_PYRAMIDTREE_H
 #define MDSEARCH_PYRAMIDTREE_H
 
+#include "hashstruct.hpp"
+#include "boundary.hpp"
+
 // Only define if you want a hack which causes the Pyramid Tree hasher
 // to ignore dimensions when a point is at the min or max boundaries
 // for that dimension
 #define BOUNDARY_VALUE_HACK 1
-
-#include "hashstruct.hpp"
 
 namespace mdsearch
 {

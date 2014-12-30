@@ -37,6 +37,8 @@ THE SOFTWARE.
 #define MDSEARCH_DATASET_H
 
 #include "types.hpp"
+#include "point.hpp"
+#include "boundary.hpp"
 #include <boost/lexical_cast.hpp>
 #include <fstream>
 

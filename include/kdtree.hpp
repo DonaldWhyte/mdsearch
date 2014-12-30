@@ -38,6 +38,7 @@ THE SOFTWARE.
 #define MDSEARCH_KDTREE_H
 
 #include "types.hpp"
+#include "point.hpp"
 #include <algorithm>
 
 namespace mdsearch

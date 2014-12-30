@@ -1,4 +1,6 @@
 #include "types.hpp"
+#include "point.hpp"
+#include "boundary.hpp"
 #include "timing.hpp"
 #include <iostream>
 
