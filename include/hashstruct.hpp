@@ -48,8 +48,8 @@ THE SOFTWARE.
 namespace mdsearch
 {
 
-    /* Remove element at given index from vector, using erase-remove
-     * idiom to prevent $(n) move operation. 
+    /** Remove element at given index from vector, using erase-remove
+     * idiom to prevent $(n) move operation.
      *
      * NOTE: This deletes an element, but does NOT preserve the
      * vector's order.
@@ -64,61 +64,67 @@ namespace mdsearch
         vec.erase(vec.end() - 1);
     }
 
+    /** A generic hash-based index structure. It hashes points to a
+     * one-dimensional value and uses that value as the key into a hash ma. */
     template<int D, typename ELEM_TYPE>
     class HashStructure
     {
 
     public:
-        typedef std::vector<ELEM_TYPE> ValueList;
-
-        /* Clear all points currently stored in the structure. */
+        /** Clear all points currently stored in the structure. */
         void clear();
 
-        /* Insert point into the Pyramid Tree.
+        /** Insert point into the Pyramid Tree.
          * Returns true if the point was inserted successfully and
          * false if the point is already stored in the structure. */
         bool insert(const Point<D, ELEM_TYPE>& point);
-        /* Remove point from the tree.
+        /** Remove point from the structure.
          * Returns true if the point was removed successfully and
          * false if the point was not being stored. */
         bool remove(const Point<D, ELEM_TYPE>& point);
-        /* Return true if the given point is being stored in the structure. */
+        /** Return true if the given point is being stored in the structure. */
         bool query(const Point<D, ELEM_TYPE>& point);
 
-        /* Return total number of points currently stored in the structure. */
+        /** Return total number of points currently stored in the structure. */
         unsigned int numPointsStored() const;
-        /* Return total number of buckets in structure. */
+        /** Return total number of buckets in structure. */
         unsigned int numBuckets() const;
-        /* Return average number of points stored in a bucket. */
+        /** Return average number of points stored in a bucket. */
         ELEM_TYPE averagePointsPerBucket() const;
-        /* Return minimum number of points stored in a single bucket. */
+        /** Return minimum number of points stored in a single bucket. */
         unsigned int minPointsPerBucket() const;
-        /* Return maximum number of points stored in a single bucket. */
+        /** Return maximum number of points stored in a single bucket. */
         unsigned int maxPointsPerBucket() const;
 
     protected:
+        /** Structure used to store all points with the same hash value. */
         struct Bucket
         {
+            /** Stores all points in bucket. */
             std::vector< Point<D, ELEM_TYPE> > points;
-            ValueList pointSums;
+            /* Vector that corresponds with 'points'. For each point, this
+             * stores its summed coordinates. Used for optimisation search
+             * through buckets. */
+             std::vector<ELEM_TYPE> pointSums;
         };
+        /** Maps 1D hash values to buckets. */
         typedef boost::unordered_map<HashType, Bucket> OneDMap;
 
-        /* Retrieve bucket containing given point. 
+        /** Retrieve bucket containing given point.
          * Return NULL if no bucket contains the point. */
         Bucket* getContainingBucket(const Point<D, ELEM_TYPE>& point);
 
-        /* Get index of given point in given bucket.
+        /** Get index of given point in given bucket.
          * Return -1 if point could not be found in bucket. */
         int getPointIndexInBucket(const Point<D, ELEM_TYPE>& point,
                                   const Bucket* bucket) const;
 
-        /* Hashes point to one-dimensional value. */
+        /** Hashes point to one-dimensional value.
+         * Must be implemented by suc-classes. */
         virtual HashType hashPoint(const Point<D, ELEM_TYPE>& p) = 0;
 
-        // Unordered_map for storing the points
-        // Key = hashed 1D representation of point
-        // Value = list of points in BUCKET
+        /** Unordered_map for storing the points. Key = hashed 1D
+         * representation of point, value = list of points. */
         OneDMap hashMap;
 
     };
@@ -197,7 +203,7 @@ namespace mdsearch
         else
         {
             return false;
-        }            
+        }
     }
 
     template<int D, typename ELEM_TYPE>
@@ -220,8 +226,8 @@ namespace mdsearch
         }
         return total;
     }
-   
-    template<int D, typename ELEM_TYPE> 
+
+    template<int D, typename ELEM_TYPE>
     inline
     unsigned int HashStructure<D, ELEM_TYPE>::numBuckets() const
     {

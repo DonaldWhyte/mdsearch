@@ -57,6 +57,7 @@ namespace mdsearch
     {
 
     protected:
+        /** Hash point using bits of point's elements. */
         virtual HashType hashPoint(const Point<D, ELEM_TYPE>& p);
 
     };

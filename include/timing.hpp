@@ -47,14 +47,16 @@ THE SOFTWARE.
 namespace mdsearch
 {
 
-    /* Return current time in seconds. */
+    /** Return current time in seconds.
+     * If on Windows, nanosecond precision is not guaranteed.
+     * If on Linux, this is guaranteed to have nanosecond precision. */
     double getTime()
     {
     #if defined(_WIN32)
         return static_cast<double>(time(NULL)); // in seconds already
     #elif defined(__unix__)
         timespec ts;
-        clock_gettime(CLOCK_REALTIME, &ts); 
+        clock_gettime(CLOCK_REALTIME, &ts);
         return static_cast<double>(ts.tv_sec) + (static_cast<double>(ts.tv_nsec) / 1000000000.0);
     #else
         return 0.0;

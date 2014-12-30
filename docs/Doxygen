@@ -28,7 +28,7 @@ EXTRACT_ANON_NSPACES = YES
 SHOW_GROUPED_MEMB_INC  = YES
 
 # Function source code shown inline
-INLINE_SOURCES = YES
+INLINE_SOURCES = NO
 
 # Show all functions that reference current function
 REFERENCED_BY_RELATION = YES

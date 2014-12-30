@@ -48,32 +48,44 @@ THE SOFTWARE.
 namespace mdsearch
 {
 
+    /** Implements the Pyramid Tree from Berchtold et al.'s 1998 paper.
+     * Instead of using a B+-tree as the underlying one-dimensional index
+     * structure, a hash map is used instead.
+     *
+     * NOTE: Points outside of boundary assigned to Pyramid Trees are ignored.
+    */
     template<int D, typename ELEM_TYPE>
     class PyramidTree : public HashStructure<D, ELEM_TYPE>
     {
 
     public:
+        /** Construct Pyramid Tree to cover given boundary. */
         PyramidTree(const Boundary<D, ELEM_TYPE>& boundary);
 
+        /** Clear all points in Pyramid Tree and reset its spatial boundary. */
         void clear(const Boundary<D, ELEM_TYPE>& newBoundary);
 
     protected:
-        static const Real MAX_BUCKET_NUMBER = 30000000000;
-
-        /* Normalise value into 0-1 range based on min-max interval. */
-        Real normaliseCoord(Real coord, Real min, Real max);
-        /* Compute Pyramid height of a point, for a specific pair of
-         * pyramid (that are both for the same dimension). */
-        Real pyramidHeight(Real coord, Real min, Real max);
-        /* Compute pyramid value of the given point, using the
-         * Pyramid-technique. */
+        /** Uses pyramid value of given point to hash it. */
         virtual HashType hashPoint(const Point<D, ELEM_TYPE>& p);
 
-        // Entire region of space the Pyramid tree covers
-        // (points outside this region are ignored)
+    private:
+        /** This bounds the number of buckets the Pyramid Tree can use to
+         * store points. */
+        static const ELEM_TYPE MAX_BUCKET_NUMBER = 30000000000;
+
+        /** Normalise value into 0-1 range based on min-max interval. */
+        ELEM_TYPE normaliseCoord(ELEM_TYPE coord,
+                                 ELEM_TYPE min, ELEM_TYPE max);
+
+        /** Compute Pyramid height of a point, for a specific pair of
+         * pyramid (that are both for the same dimension). */
+        ELEM_TYPE pyramidHeight(ELEM_TYPE coord, ELEM_TYPE min, ELEM_TYPE max);
+
+        /** Entire region of space the Pyramid tree covers. */
         Boundary<D, ELEM_TYPE> boundary;
-        // Interval between buckets
-        Real bucketInterval;
+        /** Spatial interval between buckets. */
+        ELEM_TYPE bucketInterval;
 
     };
 
@@ -82,8 +94,8 @@ namespace mdsearch
         const Boundary<D, ELEM_TYPE>& boundary)
     : boundary(boundary)
     {
-        // Compute the interval between buckets 
-        bucketInterval = static_cast<Real>( MAX_BUCKET_NUMBER / (D * 2) );
+        // Compute the interval between buckets
+        bucketInterval = static_cast<ELEM_TYPE>( MAX_BUCKET_NUMBER / (D * 2) );
         bucketInterval = floor(bucketInterval);
     }
 
@@ -97,16 +109,16 @@ namespace mdsearch
 
     template<int D, typename ELEM_TYPE>
     inline
-    Real PyramidTree<D, ELEM_TYPE>::normaliseCoord(Real coord,
-                                                   Real min, Real max)
+    ELEM_TYPE PyramidTree<D, ELEM_TYPE>::normaliseCoord(ELEM_TYPE coord,
+                                                   ELEM_TYPE min, ELEM_TYPE max)
     {
         return (coord - min) / (max - min);
     }
-    
+
     template<int D, typename ELEM_TYPE>
     inline
-    Real PyramidTree<D, ELEM_TYPE>::pyramidHeight(Real coord,
-                                                  Real min, Real max)
+    ELEM_TYPE PyramidTree<D, ELEM_TYPE>::pyramidHeight(ELEM_TYPE coord,
+                                                  ELEM_TYPE min, ELEM_TYPE max)
     {
         return std::abs(0.5f - normaliseCoord(coord, min, max));
     }
@@ -116,11 +128,11 @@ namespace mdsearch
     {
         int index = 0;
         int dMax = 0;
-        Real dMaxHeight = pyramidHeight(p[0],
+        ELEM_TYPE dMaxHeight = pyramidHeight(p[0],
             boundary[0].min, boundary[0].max);
         for (int d = 1; (d < D); d++)
         {
-            Real currentHeight = pyramidHeight(p[d],
+            ELEM_TYPE currentHeight = pyramidHeight(p[d],
                 boundary[d].min, boundary[d].max);
             #ifdef BOUNDARY_VALUE_HACK
             if (compare(currentHeight, 0.5f) == 0)
@@ -136,18 +148,18 @@ namespace mdsearch
             }
         }
 
-        Real normalisedCoord = normaliseCoord(p[dMax],
+        ELEM_TYPE normalisedCoord = normaliseCoord(p[dMax],
             boundary[dMax].min, boundary[dMax].max);
         if (normalisedCoord < 0.5f)
         {
             index = dMax; // pyramid lower than central point
         }
-        else 
+        else
         {
             index = dMax + D; // pyramid higher than central point
         }
 
-        return (index + dMaxHeight) * bucketInterval;            
+        return (index + dMaxHeight) * bucketInterval;
     }
 
 }

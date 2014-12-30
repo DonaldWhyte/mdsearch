@@ -45,7 +45,7 @@ THE SOFTWARE.
 namespace mdsearch
 {
 
-    /* Class which stores a collection of points with the same dimensionaliy.
+    /** Sstores a collection of points with the same dimensionaliy.
      * Provides functionality to load points from std::vector objects or
      * text files. */
     template<int D, typename ELEM_TYPE>
@@ -55,10 +55,10 @@ namespace mdsearch
     public:
         typedef std::vector< Point<D, ELEM_TYPE> > PointList;
 
-        /* Add all given points to dataset. */
+        /** Add all given points to dataset. */
         void load(const PointList& newPoints);
 
-        /* Add all points in text file with given name to dataset. 
+        /*& Add all points in text file with given name to dataset.
          * Format of text file:
          * d n
          * p1_1 p1_2 ... p1_d
@@ -70,14 +70,15 @@ namespace mdsearch
          * is the number of points in the dataset. */
         void load(const std::string& filename);
 
-        /* Compute minimum bounding hyper-rectangle that contains all 
+        /** Compute minimum bounding hyper-rectangle that contains all
          * the points in the dataset. */
         Boundary<D, ELEM_TYPE> computeBoundary() const;
 
-        /* Retrieve all points stored in dataset. */
+        /** Retrieve all points stored in dataset. */
         const PointList& getPoints() const;
 
     private:
+        /** Contains all points in the dataset. */
         PointList points;
 
     };
