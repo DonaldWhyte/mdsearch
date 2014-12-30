@@ -48,7 +48,7 @@ namespace mdsearch
     /* Class which stores a collection of points with the same dimensionaliy.
      * Provides functionality to load points from std::vector objects or
      * text files. */
-    template<int D>
+    template<int D, typename ELEM_TYPE = Real>
     class Dataset
     {
 
@@ -82,8 +82,8 @@ namespace mdsearch
 
     };
 
-    template<int D>
-    void Dataset<D>::load(const PointList& newPoints)
+    template<int D, typename ELEM_TYPE>
+    void Dataset<D, ELEM_TYPE>::load(const PointList& newPoints)
     {
         // Pre-allocate memory in one sys call
         points.reserve(points.size() + newPoints.size());
@@ -91,8 +91,8 @@ namespace mdsearch
         points.insert(points.end(), newPoints.begin(), newPoints.end());
     }
 
-    template <int D>
-    void Dataset<D>::load(const std::string& filename)
+    template<int D, typename ELEM_TYPE>
+    void Dataset<D, ELEM_TYPE>::load(const std::string& filename)
     {
         // Open specified file and just do nothing if
         // the file does not exist
@@ -125,7 +125,7 @@ namespace mdsearch
         // Pre-allocate memory to store all the specified points
         points.reserve(points.size() + numPoints);
         // Treat the rest of lines as points
-        Real temp[D]; // temporary stores point's values
+        ELEM_TYPE temp[D]; // temporary stores point's values
         for (unsigned int i = 0; (i < numPoints); i++)
         {
             for (unsigned int j = 0; (j < numDimensions); j++)
@@ -141,10 +141,12 @@ namespace mdsearch
         }
     }
 
-    template <int D>
-    Boundary<D> Dataset<D>::computeBoundary() const
+    template<int D, typename ELEM_TYPE>
+    Boundary<D> Dataset<D, ELEM_TYPE>::computeBoundary() const
     {
-        Boundary<D> boundary(Interval(0, 0));
+        Boundary<D, ELEM_TYPE> boundary(
+            Interval<ELEM_TYPE>(0, 0)
+        );
 
         if (!points.empty())
         {
@@ -177,9 +179,10 @@ namespace mdsearch
         return boundary;
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    const typename Dataset<D>::PointList& Dataset<D>::getPoints() const
+    const typename Dataset<D, ELEM_TYPE>::PointList&
+        Dataset<D, ELEM_TYPE>::getPoints() const
     {
         return points;
     }

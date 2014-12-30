@@ -36,12 +36,14 @@ THE SOFTWARE.
 #ifndef MDSEARCH_BOUNDARY_H
 #define MDSEARCH_BOUNDARY_H
 
+#include "types.hpp"
 #include <iostream>
 
 namespace mdsearch
 {
 
     /* One-dimensional interval. */
+    template<typename ELEM_TYPE = Real>
     struct Interval
     {
 
@@ -51,20 +53,20 @@ namespace mdsearch
 
         /* Instantiates an interval, initialising its min and max
          * bounds using the given values. */
-        Interval(Real min, Real max);
+        Interval(ELEM_TYPE min, ELEM_TYPE max);
 
         /* Output interval's min and max value to stream. */
         void print(std::ostream& out) const;
 
         // Lower and upper bounds of the interval
-        Real min;
-        Real max;
+        ELEM_TYPE min;
+        ELEM_TYPE max;
 
     };
 
     /* Boundary in D-dimensional space. This structure contains D
      * one-dimensional intervals. */
-    template<int D>
+    template<int D, typename ELEM_TYPE = Real>
     class Boundary
     {
 
@@ -75,50 +77,55 @@ namespace mdsearch
 
         /* Constructs new boundary, initialising each interval to the given
          * interval. */
-        Boundary(const Interval& initialInterval);
+        Boundary(const Interval<ELEM_TYPE>& initialInterval);
 
         /* Use given array of intervals to initialise boundary's intervals.
          * ASSUMPTION: 'initialIntervals' points to an array containing D
          * Interval objects. If this is not the case, the behaviour is
          * undefined. */   
-        Boundary(const Interval* initialIntervals);
+        Boundary(const Interval<ELEM_TYPE>* initialIntervals);
 
         /* Retrieve interval (min and max value) of dth dimension. */
-        const Interval& operator[](int d) const;
+        const Interval<ELEM_TYPE>& operator[](int d) const;
         /* Retrieve modifiable reference to interval (min and max value) of
          * dth dimension. */
-        Interval& operator[](int d);
+        Interval<ELEM_TYPE>& operator[](int d);
 
         /* Output all the boundary's intervals to stream. */
         void print(std::ostream& out) const;
 
     private:
         // Minimum and maximum values for each dimension
-        Interval intervals[D];
+        Interval<ELEM_TYPE> intervals[D];
 
     };
 
-    Interval::Interval()
+    template<typename ELEM_TYPE>
+    Interval<ELEM_TYPE>::Interval()
     {
     }
 
-    Interval::Interval(Real min, Real max) : min(min), max(max)
+    template<typename ELEM_TYPE>
+    Interval<ELEM_TYPE>::Interval(ELEM_TYPE min, ELEM_TYPE max)
+    : min(min), max(max)
     {
     }
 
+    template<typename ELEM_TYPE>
     inline
-    void Interval::print(std::ostream& out) const
+    void Interval<ELEM_TYPE>::print(std::ostream& out) const
     {
         out << "[" << min << ":" << max << "]";    
     }
 
-    template<int D>
-    Boundary<D>::Boundary()
+    template<int D, typename ELEM_TYPE>
+    Boundary<D, ELEM_TYPE>::Boundary()
     {
     }
 
-    template<int D>
-    Boundary<D>::Boundary(const Interval& initialInterval)
+    template<int D, typename ELEM_TYPE>
+    Boundary<D, ELEM_TYPE>::Boundary(
+        const Interval<ELEM_TYPE>& initialInterval)
     {
         for (unsigned int d = 0; (d < D); d++)
         {
@@ -126,29 +133,30 @@ namespace mdsearch
         }
     }
 
-    template<int D>
-    Boundary<D>::Boundary(const Interval* initialIntervals)
+    template<int D, typename ELEM_TYPE>
+    Boundary<D, ELEM_TYPE>::Boundary(
+        const Interval<ELEM_TYPE>* initialIntervals)
     {
-        memcpy(intervals, initialIntervals, sizeof(Interval) * D);
+        memcpy(intervals, initialIntervals, sizeof(Interval<ELEM_TYPE>) * D);
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    const Interval& Boundary<D>::operator[](int d) const
-    {
-        return intervals[d];
-    }
-
-    template<int D>
-    inline
-    Interval& Boundary<D>::operator[](int d)
+    const Interval<ELEM_TYPE>& Boundary<D, ELEM_TYPE>::operator[](int d) const
     {
         return intervals[d];
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    void Boundary<D>::print(std::ostream& out) const
+    Interval<ELEM_TYPE>& Boundary<D, ELEM_TYPE>::operator[](int d)
+    {
+        return intervals[d];
+    }
+
+    template<int D, typename ELEM_TYPE>
+    inline
+    void Boundary<D, ELEM_TYPE>::print(std::ostream& out) const
     {
         out << "(";
         for (unsigned int d = 0; (d < D - 1); d++)
@@ -159,16 +167,18 @@ namespace mdsearch
         out << ")";
     }
 
-
-    std::ostream& operator<<(std::ostream& out, const Interval& interval)
+    template<typename ELEM_TYPE>
+    std::ostream& operator<<(std::ostream& out, 
+                             const Interval<ELEM_TYPE>& interval)
     {
         interval.print(out);
         return out;
         
     }
 
-    template<int D>
-    std::ostream& operator<<(std::ostream& out, const Boundary<D>& boundary)
+    template<int D, typename ELEM_TYPE>
+    std::ostream& operator<<(std::ostream& out,
+                             const Boundary<D, ELEM_TYPE>& boundary)
     {
         boundary.print(out);
         return out;

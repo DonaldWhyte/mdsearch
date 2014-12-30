@@ -36,13 +36,14 @@ THE SOFTWARE.
 #ifndef MDSEARCH_POINT_H
 #define MDSEARCH_POINT_H
 
+#include "types.hpp"
 #include <cstring>
 #include <iostream>
 
 namespace mdsearch
 {
 
-    template <int D>
+    template <int D, typename ELEM_TYPE = Real>
     class Point
     {
 
@@ -53,47 +54,47 @@ namespace mdsearch
 
         /* Constructs new point, initialising each coordinate to the given
          * real value. */
-        Point(Real initialValue);
+        Point(ELEM_TYPE initialValue);
 
         /* Use given array of real values to initialise point's coordinates.
          * ASSUMPTION: 'initialValues' points to an array containing D real
          * numbers. If this is not the case, the behaviour is undefined. */
-        Point(const Real* initialValues);
+        Point(const ELEM_TYPE* initialValues);
 
         /* Point equality and inequality. */
         inline bool operator==(const Point& other) const;
         inline bool operator!=(const Point& other) const;
 
         /* Retrieve value of dth coordinate. */
-        Real operator[](int d) const;
+        ELEM_TYPE operator[](int d) const;
 
         /* Retrieve modifiable reference to dth coordinate. */
-        Real& operator[](int d);
+        ELEM_TYPE& operator[](int d);
 
         /* Retrieve point's coordinates as unmodifiable C-style array. */
-        const Real* asArray() const;
+        const ELEM_TYPE* asArray() const;
 
         /* Retrieve point's coordinates as modifiable C-style array. */
-        Real* asArray();
+        ELEM_TYPE* asArray();
 
         /* Compute sum of all coordinates of point. */
-        Real sum() const;
+        ELEM_TYPE sum() const;
 
         /* Output point's values to stream. */
         void print(std::ostream& out) const;
 
     private:
-        Real values[D];
+        ELEM_TYPE values[D];
 
     };
 
-    template<int D>
-    Point<D>::Point()
+    template<int D, typename ELEM_TYPE>
+    Point<D, ELEM_TYPE>::Point()
     {
     }
 
-    template<int D>
-    Point<D>::Point(Real initialValue)
+    template<int D, typename ELEM_TYPE>
+    Point<D, ELEM_TYPE>::Point(ELEM_TYPE initialValue)
     {
         for (unsigned int d = 0; (d < D); d++)
         {
@@ -101,15 +102,15 @@ namespace mdsearch
         }
     }
 
-    template<int D>
-    Point<D>::Point(const Real* initialValues)
+    template<int D, typename ELEM_TYPE>
+    Point<D, ELEM_TYPE>::Point(const ELEM_TYPE* initialValues)
     {
-        memcpy(values, initialValues, sizeof(Real) * D);
+        memcpy(values, initialValues, sizeof(ELEM_TYPE) * D);
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    bool Point<D>::operator==(const Point& other) const
+    bool Point<D, ELEM_TYPE>::operator==(const Point& other) const
     {
         for (unsigned int d = 0; (d < D); d++)
         {
@@ -121,46 +122,46 @@ namespace mdsearch
         return true;
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    bool Point<D>::operator!=(const Point& other) const
+    bool Point<D, ELEM_TYPE>::operator!=(const Point& other) const
     {
         return !(*this == other);
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    Real Point<D>::operator[](int d) const
+    ELEM_TYPE Point<D, ELEM_TYPE>::operator[](int d) const
     {
         return values[d];
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    Real& Point<D>::operator[](int d)
+    ELEM_TYPE& Point<D, ELEM_TYPE>::operator[](int d)
     {
         return values[d];
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    const Real* Point<D>::asArray() const
+    const ELEM_TYPE* Point<D, ELEM_TYPE>::asArray() const
     {
         return &values[0];
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    Real* Point<D>::asArray()
+    ELEM_TYPE* Point<D, ELEM_TYPE>::asArray()
     {
         return &values[0];
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    Real Point<D>::sum() const
+    ELEM_TYPE Point<D, ELEM_TYPE>::sum() const
     {
-        Real s = 0;
+        ELEM_TYPE s = 0;
         for (unsigned int d = 0; (d < D); d++)
         {
             s += values[d];
@@ -168,9 +169,9 @@ namespace mdsearch
         return s;    
     }
  
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    void Point<D>::print(std::ostream& out) const
+    void Point<D, ELEM_TYPE>::print(std::ostream& out) const
     {
         out << "(";
         for (int i = 0; (i < D - 1); i++)
@@ -180,8 +181,9 @@ namespace mdsearch
         out << values[D - 1] << ")";
     }
 
-    template<int D>
-    std::ostream& operator<<(std::ostream& out, const Point<D>& point)
+    template<int D, typename ELEM_TYPE>
+    std::ostream& operator<<(std::ostream& out,
+                             const Point<D, ELEM_TYPE>& point)
     {
         point.print(out);
         return out;
