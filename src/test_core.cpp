@@ -44,34 +44,40 @@ THE SOFTWARE.
 
 using namespace mdsearch;
 
-void testCoreTypes()
+namespace
 {
-    // Test point and boundary initialisation
-    Real values[] = { 0.0f, 1.0f, 2.0f };
-    Point<3, Real> point(values);
-    Interval<Real> intervals[3] = {
-        Interval<Real>(0.0f, 1.0f),
-        Interval<Real>(0.0f, 2.0f),
-        Interval<Real>(-1.0f, 1.0f)
-    };
-    Boundary<3, Real> boundary(&intervals[0]);
 
-    std::cout << point << " " << point.sum() << std::endl;
-    std::cout << boundary << std::endl;
-}
+    static void testCoreTypes()
+    {
+        // Test point and boundary initialisation
+        Real values[] = { 0.0f, 1.0f, 2.0f };
+        Point<3, Real> point(values);
+        Interval<Real> intervals[3] = {
+            Interval<Real>(0.0f, 1.0f),
+            Interval<Real>(0.0f, 2.0f),
+            Interval<Real>(-1.0f, 1.0f)
+        };
+        Boundary<3, Real> boundary(&intervals[0]);
 
-void testFloatComparison()
-{
-    std::cout << "0 == 0 -> " << compare(0.0f, 0.0f) << std::endl;
-    std::cout << "1 > 0 -> " << compare(1.0f, 0.0f) << std::endl;
-    std::cout << "-1 < 0 -> " << compare(-1.0f, 0.0f) << std::endl;    
-}
+        std::cout << point << " " << point.sum() << std::endl;
+        std::cout << boundary << std::endl;
+    }
 
-void testTiming()
-{
-    double startTime = getTime();
-    sleep(1);
-    std::cout << "Slept for " << getTime() - startTime << " seconds" << std::endl;
+    static void testFloatComparison()
+    {
+        std::cout << "0 == 0 -> " << compare(0.0f, 0.0f) << std::endl;
+        std::cout << "1 > 0 -> " << compare(1.0f, 0.0f) << std::endl;
+        std::cout << "-1 < 0 -> " << compare(-1.0f, 0.0f) << std::endl;
+    }
+
+    static void testTiming()
+    {
+        double startTime = getTime();
+        sleep(1);
+        std::cout << "Slept for " << (getTime() - startTime)
+                  << " seconds" << std::endl;
+    }
+
 }
 
 int main(int argc, char* argv[])
