@@ -74,14 +74,16 @@ namespace mdsearch
         /** Clear all points currently stored in the structure. */
         void clear();
 
-        /** Insert point into the Pyramid Tree.
+        /** Insert point into structure.
          * Returns true if the point was inserted successfully and
          * false if the point is already stored in the structure. */
         bool insert(const Point<D, ELEM_TYPE>& point);
+
         /** Remove point from the structure.
          * Returns true if the point was removed successfully and
          * false if the point was not being stored. */
         bool remove(const Point<D, ELEM_TYPE>& point);
+
         /** Return true if the given point is being stored in the structure. */
         bool query(const Point<D, ELEM_TYPE>& point);
 

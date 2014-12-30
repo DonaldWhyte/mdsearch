@@ -37,38 +37,59 @@ THE SOFTWARE.
 #ifndef MDSEARCH_KDTREE_H
 #define MDSEARCH_KDTREE_H
 
-#include "types.hpp"
 #include "point.hpp"
 #include <algorithm>
 
 namespace mdsearch
 {
 
+    /** Implements point kd-tree index structure, as described in Bentley's
+     * 1975 paper "Multidimensional binary search trees used for associative
+     * searching". */
     template<int D, typename ELEM_TYPE>
     class KDTree
     {
 
     public:
+        /** Construct empty kd-tree(). */
         KDTree();
+        /** Delete root node of tree and all of its children. */
         ~KDTree();
 
+        /** Remove all points from tree. */
         void clear();
-        bool insert(const Point<D, ELEM_TYPE>& p);
-        bool query(const Point<D, ELEM_TYPE>& p);
-        bool remove(const Point<D, ELEM_TYPE>& p);
+        /** Insert point into structure.
+         * Returns true if the point was inserted successfully and
+         * false if the point is already stored in the structure. */
+        bool insert(const Point<D, ELEM_TYPE>& point);
+        /** Remove point from the structure.
+         * Returns true if the point was removed successfully and
+         * false if the point was not being stored. */
+        bool remove(const Point<D, ELEM_TYPE>& point);
+        /** Return true if the given point is being stored in the structure. */
+        bool query(const Point<D, ELEM_TYPE>& point);
 
     private:
+        /* Represents single node in point kd-tree structure. */
         struct Node
         {
+            /** Point stored in node. */
             Point<D, ELEM_TYPE> point;
+            /** Pointer to left child of node.
+             * NULL if node has no left chi.d. */
             Node* leftChild;
+            /** Pointer to right child of node.
+             * NULL if node has no right chi.d. */
             Node* rightChild;
 
+            /** Construct leaf node that stores given point. */
             Node(const Point<D, ELEM_TYPE>& p)
             : point(p), leftChild(NULL), rightChild(NULL)
             {
 
             }
+
+            /** Delete node and both of its children. */
             ~Node()
             {
                 delete leftChild;
@@ -76,16 +97,26 @@ namespace mdsearch
             }
         };
 
-        unsigned int nextCuttingDimension(unsigned int cuttingDim); 
+        /** Given the current dimension used to cut the data space, return
+         * the next dimension that should be used. */
+        unsigned int nextCuttingDimension(unsigned int cuttingDim);
+
+        /** Recursively remove node with given point from structure.
+         * 'removed' flag will be set to true if point was successfully
+         * found and deleted. */
         Node* recursiveRemove(Node* node,
                               const Point<D, ELEM_TYPE>& p,
                               unsigned int cuttingDim,
                               bool* removed);
+
+        /** Find point that has the LOWEST value for the given dimension.
+         * This searches through the sub-tree rooted at 'node'. */
         const Point<D, ELEM_TYPE>* findMinimum(Node* node,
                                                unsigned int dimension,
                                                unsigned int cuttingDim);
 
     private:
+        /** Root node of tree. */
         Node* root;
 
     };
@@ -196,7 +227,7 @@ namespace mdsearch
         unsigned int cuttingDim)
     {
         return (cuttingDim + 1) % D;
-    }    
+    }
 
     template<int D, typename ELEM_TYPE>
     typename KDTree<D, ELEM_TYPE>::Node* KDTree<D, ELEM_TYPE>::recursiveRemove(
@@ -225,7 +256,7 @@ namespace mdsearch
             if (node->leftChild == NULL && node->rightChild == NULL)
             {
                 // Set 'removed' flag to true to signal success
-                *removed = true; 
+                *removed = true;
                 delete node;
                 return NULL; // to remove reference to node in parent
             }
@@ -272,7 +303,7 @@ namespace mdsearch
         // just search left child!
         else if (dimension == cuttingDim)
         {
-            if (node->leftChild == NULL) // if no more 
+            if (node->leftChild == NULL) // if no more
                 return &node->point;
             else
                 return findMinimum(node->leftChild,

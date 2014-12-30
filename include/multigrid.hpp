@@ -55,65 +55,124 @@ namespace mdsearch
 
     struct MultigridNode
     {
+        /** True if node is a leaf, and stores points. */
         bool isLeaf;
-        // Leaf information
+        /** Indices of points contained in bucket.
+         * Only used if node is a leaf. */
         std::vector<int> pointIndices;
-        // Non-leaf information
+
+        /** Indices of points contained in bucket.
+         * Only used if node is a non-leaf. */
         boost::unordered_map<HashType, MultigridNode>* children;
 
+        /** Construct empty leaf node. */
         MultigridNode();
+        /** Recursively delete child nodes. */
         ~MultigridNode();
 
+        /** Add point to node. If node is a leaf and it has enough space,
+         * the point will be stored. If the node is not a leaf, it will
+         * hash the point and store it inside one of its children. */
         void addPoint(int pointIndex);
+
+        /** Remove point with given index from node. If node is not a leaf,
+         * it will try and remove the node from its children.
+         * Return true if point was removed and false if point was not stored
+         * in this node. */
         bool removePoint(int pointIndex);
+
+        /** Return number of points stored DIRECTLY in this node. Contents of
+         * child nodes are ignored. Hence, this will always return 0 if node
+         * is not a leaf. */
         std::size_t numPoints() const;
 
     };
 
+    /**
+     * The Multigrid Tree decomposes the data space into a uniform grid
+     * by cutting each dimension into B intervals. A cell is defined by
+     * the interval of each dimension it is contained in, meaning there
+     * are a total of B^d cells, where d is the number of dimensions.
+    */
     template<int D, typename ELEM_TYPE>
     class Multigrid
     {
 
     public:
+        /** Construct Multigrid Tree to cover given boundary.
+         *
+         * \param intervalsPerDimension determines how many buckets will be
+         * used for each dimension. More buckets means more discrimination
+         * and less points in each bucket, on average.
+         *
+         * \param bucketSize determines initial amount of memory a bucket
+         * reserves to store points.
+        */
         Multigrid(const Boundary<D, ELEM_TYPE>& boundary,
             Real intervalsPerDimension = 1000000000,
             int bucketSize = 8);
 
+        /** Clear all points in Multigrid Tree and reset its spatial
+         * boundary. */
         void clear(const Boundary<D, ELEM_TYPE>& newBoundary);
-        bool insert(const Point<D, ELEM_TYPE>& p);
-        bool query(const Point<D, ELEM_TYPE>& p);
-        bool remove(const Point<D, ELEM_TYPE>& p);
 
+        /** Insert point into structure.
+         * Returns true if the point was inserted successfully and
+         * false if the point is already stored in the structure. */
+        bool insert(const Point<D, ELEM_TYPE>& point);
+
+        /** Remove point from the structure.
+         * Returns true if the point was removed successfully and
+         * false if the point was not being stored. */
+        bool remove(const Point<D, ELEM_TYPE>& point);
+
+        /** Return true if the given point is being stored in the structure. */
+        bool query(const Point<D, ELEM_TYPE>& point);
+
+        /** Return total number of points stored. */
         int numPoints() const;
+        /** Return total number of buckets stored. */
         int numBuckets() const;
+        /** Return average number of points in each bucket. */
         double averageBucketSize() const;
 
     private:
+        /** Maps 1D point hash values into Multigrid Tree nodes. */
         typedef boost::unordered_map<HashType, MultigridNode> BucketMap;
 
-        /* Return total number of buckets in given map,by recursively 
+        /** Return total number of buckets in given map,by recursively
          * searching through it. */
         int numBuckets(const BucketMap& map) const;
-        /* Insert point into given bucket. The given dimension is used to hash
+        /** Insert point into given bucket. The given dimension is used to hash
          * the point. */
         bool insertIntoBucket(const Point<D, ELEM_TYPE>& p,
                               int currentDim,
                               MultigridNode* currentBucket);
-        /* Normalise value into 0-1 range based on min-max interval. */
+        /** Normalise value into 0-1 range based on min-max interval. */
         Real normaliseCoord(Real coord, Real min, Real max);
-        /* Compute pyramid value of the given point, using the original
-         * Pyramid-technique. */
+        /** Hash point using the vale of its dth coordinate. */
         HashType hashPoint(const Point<D, ELEM_TYPE>& p, int d);
-        /* Retrieve pointer to bucket that contains points that have the 
+        /** Retrieve pointer to bucket that contains points that have the
          * given hash value. */
         MultigridNode* getBucketPointer(BucketMap* map, Real hashValue);
 
-        Boundary<D, ELEM_TYPE> boundary;
-        Real intervalsPerDimension;
-        int bucketSize;
 
+        /** Spatial boundary covered by Multigrid Tree. */
+        Boundary<D, ELEM_TYPE> boundary;
+        /** Determines how many buckets will be used for each dimension.
+         * More buckets means more discrimination and less points in each
+         * bucket, on average. */
+        Real intervalsPerDimension;
+        /** Determines initial amount of memory a bucket reserves to store
+         * points. */
+        int bucketSize;
+        /** Stores root Multigrid Tree nodes. These are accessed by hashing the
+         * value of a point's FIRST coordinate. */
         BucketMap rootBuckets;
+        /** Contains all points stored in tree. */
         std::vector< Point<D, ELEM_TYPE> > points;
+        /** Marks elements in 'points' vector as being unused. These will be
+         * re-used when points are inserted in the future. */
         std::stack<int> unusedIndices;
 
     };
@@ -258,7 +317,7 @@ namespace mdsearch
                 }
             }
             else
-            {    
+            {
                 currentBucket = getBucketPointer(currentBucket->children,
                     hashPoint(p, currentDim));
                 currentDim++;
