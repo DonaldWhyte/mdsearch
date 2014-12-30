@@ -54,16 +54,6 @@ namespace mdsearch
 
     struct MultigridNode
     {
-        /** True if node is a leaf, and stores points. */
-        bool isLeaf;
-        /** Indices of points contained in bucket.
-         * Only used if node is a leaf. */
-        std::vector<int> pointIndices;
-
-        /** Indices of points contained in bucket.
-         * Only used if node is a non-leaf. */
-        boost::unordered_map<HashType, MultigridNode>* children;
-
         /** Construct empty leaf node. */
         MultigridNode();
         /** Recursively delete child nodes. */
@@ -85,6 +75,16 @@ namespace mdsearch
          * is not a leaf. */
         std::size_t numPoints() const;
 
+        /** True if node is a leaf, and stores points. */
+        bool isLeaf;
+        /** Indices of points contained in bucket.
+         * Only used if node is a leaf. */
+        std::vector<int> pointIndices;
+
+        /** Indices of points contained in bucket.
+         * Only used if node is a non-leaf. */
+        boost::unordered_map<HashType, MultigridNode>* children;
+
     };
 
     /**
@@ -100,16 +100,16 @@ namespace mdsearch
     public:
         /** Construct Multigrid Tree to cover given boundary.
          *
-         * \param intervalsPerDimension determines how many buckets will be
+         * \param m_intervalsPerDimension determines how many buckets will be
          * used for each dimension. More buckets means more discrimination
          * and less points in each bucket, on average.
          *
-         * \param bucketSize determines initial amount of memory a bucket
+         * \param m_bucketSize determines initial amount of memory a bucket
          * reserves to store points.
         */
         Multigrid(const Boundary<D, ELEM_TYPE>& boundary,
-            ELEM_TYPE intervalsPerDimension = 1000000000,
-            int bucketSize = 8);
+            ELEM_TYPE m_intervalsPerDimension = 1000000000,
+            int m_bucketSize = 8);
 
         /** Clear all points in Multigrid Tree and reset its spatial
          * boundary. */
@@ -161,18 +161,18 @@ namespace mdsearch
         /** Determines how many buckets will be used for each dimension.
          * More buckets means more discrimination and less points in each
          * bucket, on average. */
-        ELEM_TYPE intervalsPerDimension;
+        ELEM_TYPE m_intervalsPerDimension;
         /** Determines initial amount of memory a bucket reserves to store
          * points. */
-        int bucketSize;
+        int m_bucketSize;
         /** Stores root Multigrid Tree nodes. These are accessed by hashing the
          * value of a point's FIRST coordinate. */
-        BucketMap rootBuckets;
+        BucketMap m_rootBuckets;
         /** Contains all points stored in tree. */
-        std::vector< Point<D, ELEM_TYPE> > points;
+        std::vector< Point<D, ELEM_TYPE> > m_points;
         /** Marks elements in 'points' vector as being unused. These will be
          * re-used when points are inserted in the future. */
-        std::stack<int> unusedIndices;
+        std::stack<int> m_unusedIndices;
 
     };
 
@@ -209,10 +209,10 @@ namespace mdsearch
 
     template<int D, typename ELEM_TYPE>
     Multigrid<D, ELEM_TYPE>::Multigrid(const Boundary<D, ELEM_TYPE>& boundary,
-        ELEM_TYPE intervalsPerDimension, int bucketSize) :
+        ELEM_TYPE m_intervalsPerDimension, int m_bucketSize) :
         boundary(boundary),
-        intervalsPerDimension(intervalsPerDimension),
-        bucketSize(bucketSize)
+        m_intervalsPerDimension(m_intervalsPerDimension),
+        m_bucketSize(m_bucketSize)
     {
     }
 
@@ -222,7 +222,7 @@ namespace mdsearch
         const Boundary<D, ELEM_TYPE>& newBoundary)
     {
         boundary = newBoundary;
-        rootBuckets = BucketMap();
+        m_rootBuckets = BucketMap();
     }
 
     template<int D, typename ELEM_TYPE>
@@ -232,15 +232,15 @@ namespace mdsearch
         HashType pyVal = hashPoint(p, currentDim);
 
         // Find the next bucket to traverse
-        MultigridNode* nextBucket = getBucketPointer(&rootBuckets, pyVal);
+        MultigridNode* nextBucket = getBucketPointer(&m_rootBuckets, pyVal);
         // If bucket not found, create new bucket and insert point into it
         if (!nextBucket)
         {
             MultigridNode newBucket;
-            points.push_back(p);
-            newBucket.addPoint(points.size() - 1);
+            m_points.push_back(p);
+            newBucket.addPoint(m_points.size() - 1);
             // Add new bucket to this pyramid tree
-            rootBuckets[pyVal] = newBucket;
+            m_rootBuckets[pyVal] = newBucket;
 
             return true;
         }
@@ -257,7 +257,7 @@ namespace mdsearch
         int currentDim = 0;
         HashType pyVal = hashPoint(p, currentDim);
 
-        MultigridNode* currentBucket = getBucketPointer(&rootBuckets, pyVal);
+        MultigridNode* currentBucket = getBucketPointer(&m_rootBuckets, pyVal);
         currentDim++;
         while (currentBucket)
         {
@@ -265,7 +265,7 @@ namespace mdsearch
             {
                 for (unsigned int i = 0; (i < currentBucket->numPoints()); i++)
                 {
-                    if (p == points[currentBucket->pointIndices[i]])
+                    if (p == m_points[currentBucket->pointIndices[i]])
                         return true;
                 }
                 return false;
@@ -287,7 +287,7 @@ namespace mdsearch
         int currentDim = 0;
         HashType pyVal = hashPoint(p, currentDim);
 
-        MultigridNode* currentBucket = getBucketPointer(&rootBuckets, pyVal);
+        MultigridNode* currentBucket = getBucketPointer(&m_rootBuckets, pyVal);
         currentDim++;
         while (currentBucket)
         {
@@ -297,7 +297,7 @@ namespace mdsearch
                 bool found = false;
                 for (index; (index < currentBucket->numPoints()); index++)
                 {
-                    if (p == points[currentBucket->pointIndices[index]])
+                    if (p == m_points[currentBucket->pointIndices[index]])
                     {
                         found = true;
                         break;
@@ -308,7 +308,7 @@ namespace mdsearch
                     int pointIndex = currentBucket->pointIndices[index];
                     currentBucket->removePoint(pointIndex);
                     // Add index of removed point to list of unused indices
-                    unusedIndices.push(pointIndex);
+                    m_unusedIndices.push(pointIndex);
                     return true;
                 }
                 else
@@ -330,21 +330,21 @@ namespace mdsearch
     inline
     int Multigrid<D, ELEM_TYPE>::numPoints() const
     {
-        return points.size();
+        return m_points.size();
     }
 
     template<int D, typename ELEM_TYPE>
     inline
     int Multigrid<D, ELEM_TYPE>::numBuckets() const
     {
-        return numBuckets(rootBuckets);
+        return numBuckets(m_rootBuckets);
     }
 
     template<int D, typename ELEM_TYPE>
     inline
     double Multigrid<D, ELEM_TYPE>::averageBucketSize() const
     {
-        return points.size() / static_cast<double>(numBuckets());
+        return m_points.size() / static_cast<double>(numBuckets());
     }
 
     template<int D, typename ELEM_TYPE>
@@ -373,24 +373,24 @@ namespace mdsearch
         {
             // Insert point into leaf since there's space!
             // (or if there aren't enough dimensions to discriminate against)
-            if (currentBucket->numPoints() < bucketSize || currentDim < D)
+            if (currentBucket->numPoints() < m_bucketSize || currentDim < D)
             {
                 for (unsigned int i = 0; (i < currentBucket->numPoints()); i++)
-                    if (p == points[currentBucket->pointIndices[i]])
+                    if (p == m_points[currentBucket->pointIndices[i]])
                         return false;
 
                 // Insert point, re-using an element for a removed point if
                 // possible
                 int pointIndex;
-                if (!unusedIndices.empty())
+                if (!m_unusedIndices.empty())
                 {
-                    pointIndex = unusedIndices.top();
-                    unusedIndices.pop();
+                    pointIndex = m_unusedIndices.top();
+                    m_unusedIndices.pop();
                 }
                 else
                 {
-                    pointIndex = points.size();
-                    points.push_back(p);
+                    pointIndex = m_points.size();
+                    m_points.push_back(p);
                 }
                 currentBucket->addPoint(pointIndex);
             }
@@ -406,7 +406,7 @@ namespace mdsearch
                 for (unsigned int i = 0; (i < currentBucket->numPoints()); i++)
                 {
                     insertIntoBucket(
-                        points[currentBucket->pointIndices[i]],
+                        m_points[currentBucket->pointIndices[i]],
                         currentDim, currentBucket);
                 }
                 // Now all points have been inserted, clear point index array
@@ -427,8 +427,8 @@ namespace mdsearch
             {
                 // Create new bucket and insert given point into it
                 MultigridNode newBucket;
-                points.push_back(p);
-                newBucket.addPoint(points.size() - 1);
+                m_points.push_back(p);
+                newBucket.addPoint(m_points.size() - 1);
                 // Add new bucket to this pyramid tree
                 (*currentBucket->children)[pyVal] = newBucket;
 
@@ -457,7 +457,7 @@ namespace mdsearch
                                                 int d)
     {
         return normaliseCoord(p[d], boundary[d].min, boundary[d].max)
-                 * intervalsPerDimension;
+                 * m_intervalsPerDimension;
     }
 
     template<int D, typename ELEM_TYPE>

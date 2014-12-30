@@ -51,7 +51,7 @@ namespace mdsearch
     {
 
     public:
-        /** Construct empty kd-tree(). */
+        /** Construct empty kd-tree. */
         KDTree();
         /** Delete root node of tree and all of its children. */
         ~KDTree();
@@ -76,10 +76,10 @@ namespace mdsearch
             /** Point stored in node. */
             Point<D, ELEM_TYPE> point;
             /** Pointer to left child of node.
-             * NULL if node has no left chi.d. */
+             * NULL if node has no left child. */
             Node* leftChild;
             /** Pointer to right child of node.
-             * NULL if node has no right chi.d. */
+             * NULL if node has no right child. */
             Node* rightChild;
 
             /** Construct leaf node that stores given point. */
@@ -117,26 +117,26 @@ namespace mdsearch
 
     private:
         /** Root node of tree. */
-        Node* root;
+        Node* m_root;
 
     };
 
     template<int D, typename ELEM_TYPE>
-    KDTree<D, ELEM_TYPE>::KDTree() : root(NULL)
+    KDTree<D, ELEM_TYPE>::KDTree() : m_root(NULL)
     {
     }
 
     template<int D, typename ELEM_TYPE>
     KDTree<D, ELEM_TYPE>::~KDTree()
     {
-        delete root;
+        delete m_root;
     }
 
     template<int D, typename ELEM_TYPE>
     void KDTree<D, ELEM_TYPE>::clear()
     {
-        delete root;
-        root = NULL;
+        delete m_root;
+        m_root = NULL;
     }
 
     template<int D, typename ELEM_TYPE>
@@ -145,7 +145,7 @@ namespace mdsearch
         Node* previous = NULL; // previous node traversed
         // Set to true if 'current' is left child of 'previous'
         bool leftChildOfPrevious = false;
-        Node* current = root;
+        Node* current = m_root;
         unsigned int cuttingDim = 0;
 
         // Loop util true/false returned - guaranteed to terminate eventually!
@@ -164,7 +164,7 @@ namespace mdsearch
                 }
                 else // if no parent, then ROOT NODE WAS INSERTED. Update root!
                 {
-                    root = current;
+                    m_root = current;
                 }
                 return true;
             }
@@ -192,7 +192,7 @@ namespace mdsearch
     template<int D, typename ELEM_TYPE>
     bool KDTree<D, ELEM_TYPE>::query(const Point<D, ELEM_TYPE>& p)
     {
-        Node* current = root;
+        Node* current = m_root;
         unsigned int cuttingDim = 0;
         while (current) // until end of tree is reached
         {
@@ -217,7 +217,7 @@ namespace mdsearch
     bool KDTree<D, ELEM_TYPE>::remove(const Point<D, ELEM_TYPE>& p)
     {
         bool removed = false;
-        root = recursiveRemove(root, p, 0, &removed);
+        m_root = recursiveRemove(m_root, p, 0, &removed);
         return removed;
     }
 

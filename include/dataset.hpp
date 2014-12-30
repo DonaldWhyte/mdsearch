@@ -79,7 +79,7 @@ namespace mdsearch
 
     private:
         /** Contains all points in the dataset. */
-        PointList points;
+        PointList m_points;
 
     };
 
@@ -87,9 +87,9 @@ namespace mdsearch
     void Dataset<D, ELEM_TYPE>::load(const PointList& newPoints)
     {
         // Pre-allocate memory in one sys call
-        points.reserve(points.size() + newPoints.size());
+        m_points.reserve(m_points.size() + newPoints.size());
         // Append given points to end of current point list
-        points.insert(points.end(), newPoints.begin(), newPoints.end());
+        m_points.insert(m_points.end(), newPoints.begin(), newPoints.end());
     }
 
     template<int D, typename ELEM_TYPE>
@@ -124,7 +124,7 @@ namespace mdsearch
             return;
 
         // Pre-allocate memory to store all the specified points
-        points.reserve(points.size() + numPoints);
+        m_points.reserve(m_points.size() + numPoints);
         // Treat the rest of lines as points
         ELEM_TYPE temp[D]; // temporary stores point's values
         for (unsigned int i = 0; (i < numPoints); i++)
@@ -133,12 +133,14 @@ namespace mdsearch
             {
                 file >> temp[j];
             }
-            points.push_back(Point<D, ELEM_TYPE>(temp));
+            m_points.push_back(Point<D, ELEM_TYPE>(temp));
 
             // If we have reached the end of the file, STOP and don't try
             // reading any more points
             if (file.eof())
+            {
                 break;
+            }
         }
     }
 
@@ -149,10 +151,10 @@ namespace mdsearch
             Interval<ELEM_TYPE>(0, 0)
         );
 
-        if (!points.empty())
+        if (!m_points.empty())
         {
             // Use first point for dimensionality and initial boundary
-            const Point<D, ELEM_TYPE>& firstPoint = points[0];
+            const Point<D, ELEM_TYPE>& firstPoint = m_points[0];
             for (unsigned int d = 0; (d < D); d++)
             {
                 boundary[d].min = firstPoint[d];
@@ -160,8 +162,8 @@ namespace mdsearch
             }
             // Now search through rest of points in dataset to find
             // minimum and maximum values for each dimension
-            for (typename PointList::const_iterator p = points.begin() + 1;
-                (p != points.end()); p++)
+            for (typename PointList::const_iterator p = m_points.begin() + 1;
+                (p != m_points.end()); p++)
             {
                 for (unsigned int d = 0; (d < D); d++)
                 {
@@ -185,7 +187,7 @@ namespace mdsearch
     const typename Dataset<D, ELEM_TYPE>::PointList&
         Dataset<D, ELEM_TYPE>::getPoints() const
     {
-        return points;
+        return m_points;
     }
 
 }

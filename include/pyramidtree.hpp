@@ -83,20 +83,20 @@ namespace mdsearch
         ELEM_TYPE pyramidHeight(ELEM_TYPE coord, ELEM_TYPE min, ELEM_TYPE max);
 
         /** Entire region of space the Pyramid tree covers. */
-        Boundary<D, ELEM_TYPE> boundary;
+        Boundary<D, ELEM_TYPE> m_boundary;
         /** Spatial interval between buckets. */
-        ELEM_TYPE bucketInterval;
+        ELEM_TYPE m_bucketInterval;
 
     };
 
     template<int D, typename ELEM_TYPE>
     PyramidTree<D, ELEM_TYPE>::PyramidTree(
         const Boundary<D, ELEM_TYPE>& boundary)
-    : boundary(boundary)
+    : m_boundary(boundary)
     {
         // Compute the interval between buckets
-        bucketInterval = static_cast<ELEM_TYPE>( MAX_BUCKET_NUMBER / (D * 2) );
-        bucketInterval = floor(bucketInterval);
+        m_bucketInterval = static_cast<ELEM_TYPE>( MAX_BUCKET_NUMBER / (D * 2) );
+        m_bucketInterval = floor(m_bucketInterval);
     }
 
     template<int D, typename ELEM_TYPE>
@@ -104,7 +104,7 @@ namespace mdsearch
         const Boundary<D, ELEM_TYPE>& newBoundary)
     {
         HashStructure<D, ELEM_TYPE>::clear();
-        boundary = newBoundary;
+        m_boundary = newBoundary;
     }
 
     template<int D, typename ELEM_TYPE>
@@ -129,11 +129,11 @@ namespace mdsearch
         int index = 0;
         int dMax = 0;
         ELEM_TYPE dMaxHeight = pyramidHeight(p[0],
-            boundary[0].min, boundary[0].max);
+            m_boundary[0].min, m_boundary[0].max);
         for (int d = 1; (d < D); d++)
         {
             ELEM_TYPE currentHeight = pyramidHeight(p[d],
-                boundary[d].min, boundary[d].max);
+                m_boundary[d].min, m_boundary[d].max);
             #ifdef BOUNDARY_VALUE_HACK
             if (compare(currentHeight, 0.5f) == 0)
             {
@@ -149,7 +149,7 @@ namespace mdsearch
         }
 
         ELEM_TYPE normalisedCoord = normaliseCoord(p[dMax],
-            boundary[dMax].min, boundary[dMax].max);
+            m_boundary[dMax].min, m_boundary[dMax].max);
         if (normalisedCoord < 0.5f)
         {
             index = dMax; // pyramid lower than central point
@@ -159,7 +159,7 @@ namespace mdsearch
             index = dMax + D; // pyramid higher than central point
         }
 
-        return (index + dMaxHeight) * bucketInterval;
+        return (index + dMaxHeight) * m_bucketInterval;
     }
 
 }

@@ -99,7 +99,7 @@ namespace mdsearch
 
     private:
         /** Minimum and maximum values for each dimension. */
-        Interval<ELEM_TYPE> intervals[D];
+        Interval<ELEM_TYPE> m_intervals[D];
 
     };
 
@@ -132,7 +132,7 @@ namespace mdsearch
     {
         for (unsigned int d = 0; (d < D); d++)
         {
-            intervals[d] = initialInterval;
+            m_intervals[d] = initialInterval;
         }
     }
 
@@ -140,21 +140,21 @@ namespace mdsearch
     Boundary<D, ELEM_TYPE>::Boundary(
         const Interval<ELEM_TYPE>* initialIntervals)
     {
-        memcpy(intervals, initialIntervals, sizeof(Interval<ELEM_TYPE>) * D);
+        memcpy(m_intervals, initialIntervals, sizeof(Interval<ELEM_TYPE>) * D);
     }
 
     template<int D, typename ELEM_TYPE>
     inline
     const Interval<ELEM_TYPE>& Boundary<D, ELEM_TYPE>::operator[](int d) const
     {
-        return intervals[d];
+        return m_intervals[d];
     }
 
     template<int D, typename ELEM_TYPE>
     inline
     Interval<ELEM_TYPE>& Boundary<D, ELEM_TYPE>::operator[](int d)
     {
-        return intervals[d];
+        return m_intervals[d];
     }
 
     template<int D, typename ELEM_TYPE>
@@ -164,9 +164,9 @@ namespace mdsearch
         out << "(";
         for (unsigned int d = 0; (d < D - 1); d++)
         {
-            out << intervals[d] << ",";
+            out << m_intervals[d] << ",";
         }
-        out << intervals[D - 1];
+        out << m_intervals[D - 1];
         out << ")";
     }
 

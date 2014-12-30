@@ -109,8 +109,6 @@ namespace mdsearch
              * through buckets. */
              std::vector<ELEM_TYPE> pointSums;
         };
-        /** Maps 1D hash values to buckets. */
-        typedef boost::unordered_map<HashType, Bucket> OneDMap;
 
         /** Retrieve bucket containing given point.
          * Return NULL if no bucket contains the point. */
@@ -125,9 +123,11 @@ namespace mdsearch
          * Must be implemented by suc-classes. */
         virtual HashType hashPoint(const Point<D, ELEM_TYPE>& p) = 0;
 
+        /** Maps 1D hash values to buckets. */
+        typedef boost::unordered_map<HashType, Bucket> OneDMap;
         /** Unordered_map for storing the points. Key = hashed 1D
          * representation of point, value = list of points. */
-        OneDMap hashMap;
+        OneDMap m_hashMap;
 
     };
 
@@ -137,7 +137,7 @@ namespace mdsearch
     {
         // NOTE: Using assignment not clear() to ensure memory is de-allocated
         // (through destructors of containers)
-        hashMap = OneDMap();
+        m_hashMap = OneDMap();
     }
 
     template<int D, typename ELEM_TYPE>
@@ -148,8 +148,8 @@ namespace mdsearch
         HashType searchKey = hashPoint(point);
         // Search underlying 1D structure to find point's bucket
         Bucket* bucket = NULL;
-        typename OneDMap::iterator it = hashMap.find(searchKey);
-        if (it != hashMap.end())
+        typename OneDMap::iterator it = m_hashMap.find(searchKey);
+        if (it != m_hashMap.end())
             bucket = &(it->second);
 
         if (bucket) // if bucket for point exists
@@ -171,7 +171,7 @@ namespace mdsearch
             Bucket newBucket;
             newBucket.points.push_back(point);
             newBucket.pointSums.push_back(point.sum());
-            hashMap[searchKey] = newBucket;
+            m_hashMap[searchKey] = newBucket;
             return true;
         }
     }
@@ -221,8 +221,8 @@ namespace mdsearch
     unsigned int HashStructure<D, ELEM_TYPE>::numPointsStored() const
     {
         int total = 0;
-        for (typename OneDMap::const_iterator it = hashMap.begin();
-            (it != hashMap.end()); it++)
+        for (typename OneDMap::const_iterator it = m_hashMap.begin();
+            (it != m_hashMap.end()); it++)
         {
             total += it->second.points.size();
         }
@@ -233,7 +233,7 @@ namespace mdsearch
     inline
     unsigned int HashStructure<D, ELEM_TYPE>::numBuckets() const
     {
-        return hashMap.size();
+        return m_hashMap.size();
     }
 
     template<int D, typename ELEM_TYPE>
@@ -248,8 +248,8 @@ namespace mdsearch
     unsigned int HashStructure<D, ELEM_TYPE>::minPointsPerBucket() const
     {
         size_t minCount = 0;
-        for (typename OneDMap::const_iterator it = hashMap.begin();
-            (it != hashMap.end()); it++)
+        for (typename OneDMap::const_iterator it = m_hashMap.begin();
+            (it != m_hashMap.end()); it++)
         {
             minCount = std::min(minCount, it->second.points.size());
         }
@@ -261,8 +261,8 @@ namespace mdsearch
     unsigned int HashStructure<D, ELEM_TYPE>::maxPointsPerBucket() const
     {
         size_t maxCount = 0;
-        for (typename OneDMap::const_iterator it = hashMap.begin();
-            (it != hashMap.end()); it++)
+        for (typename OneDMap::const_iterator it = m_hashMap.begin();
+            (it != m_hashMap.end()); it++)
         {
             maxCount = std::max(maxCount, it->second.points.size());
         }
@@ -278,8 +278,8 @@ namespace mdsearch
         // Hash point into one-dimensional key
         HashType searchKey = hashPoint(point);
         // Search underlying structure to find point's bucket
-        typename OneDMap::iterator it = hashMap.find(searchKey);
-        if (it != hashMap.end())
+        typename OneDMap::iterator it = m_hashMap.find(searchKey);
+        if (it != m_hashMap.end())
         {
             return &(it->second); // pointer to bucket
         }

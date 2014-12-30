@@ -89,7 +89,7 @@ namespace mdsearch
 
     private:
         /** Values of each coordinate. */
-        ELEM_TYPE values[D];
+        ELEM_TYPE m_values[D];
 
     };
 
@@ -103,14 +103,14 @@ namespace mdsearch
     {
         for (unsigned int d = 0; (d < D); d++)
         {
-            values[d] = initialValue;
+            m_values[d] = initialValue;
         }
     }
 
     template<int D, typename ELEM_TYPE>
     Point<D, ELEM_TYPE>::Point(const ELEM_TYPE* initialValues)
     {
-        memcpy(values, initialValues, sizeof(ELEM_TYPE) * D);
+        memcpy(m_values, initialValues, sizeof(ELEM_TYPE) * D);
     }
 
     template<int D, typename ELEM_TYPE>
@@ -119,7 +119,7 @@ namespace mdsearch
     {
         for (unsigned int d = 0; (d < D); d++)
         {
-            if (compare(values[d], other.values[d]) != 0)
+            if (compare(m_values[d], other.m_values[d]) != 0)
             {
                 return false;
             }
@@ -138,28 +138,28 @@ namespace mdsearch
     inline
     ELEM_TYPE Point<D, ELEM_TYPE>::operator[](int d) const
     {
-        return values[d];
+        return m_values[d];
     }
 
     template<int D, typename ELEM_TYPE>
     inline
     ELEM_TYPE& Point<D, ELEM_TYPE>::operator[](int d)
     {
-        return values[d];
+        return m_values[d];
     }
 
     template<int D, typename ELEM_TYPE>
     inline
     const ELEM_TYPE* Point<D, ELEM_TYPE>::asArray() const
     {
-        return &values[0];
+        return &m_values[0];
     }
 
     template<int D, typename ELEM_TYPE>
     inline
     ELEM_TYPE* Point<D, ELEM_TYPE>::asArray()
     {
-        return &values[0];
+        return &m_values[0];
     }
 
     template<int D, typename ELEM_TYPE>
@@ -169,7 +169,7 @@ namespace mdsearch
         ELEM_TYPE s = 0;
         for (unsigned int d = 0; (d < D); d++)
         {
-            s += values[d];
+            s += m_values[d];
         }
         return s;
     }
@@ -181,9 +181,9 @@ namespace mdsearch
         out << "(";
         for (int i = 0; (i < D - 1); i++)
         {
-            out << values[i] << ",";
+            out << m_values[i] << ",";
         }
-        out << values[D - 1] << ")";
+        out << m_values[D - 1] << ")";
     }
 
     template<int D, typename ELEM_TYPE>
