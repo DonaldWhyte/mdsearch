@@ -65,7 +65,7 @@ namespace mdsearch
     HashType BitHash<D>::hashPoint(const Point<D>& p)
     {
         size_t seed = 0;
-        const Real* coord = &(p.values[0]);
+        const Real* coord = p.asArray();
         const Real* end = coord + D;
         for (coord; (coord != end); ++coord)
         {
