@@ -40,10 +40,9 @@ compatible with the index structures.
 
 Generally, floating-point types are stored in multi-dimensional points.
 However, the Point class and all the structures in mdsearch can store any
-type. The type to store as coordinates in the Point class is specified using
-the second template parameter, `ELEM_TYPE`, of the library's classes.
+type. The Point, Boundary and structure classes will use the type specified in
+their second template parameter, `ELEM_TYPE`.
 
- for an arbitrary type
 To allow an arbitrary type `ELEM_TYPE` to be used with the structures, the
 following free functions must be implemented:
 * `bool operator==(const ELEM_TYPE&, const ELEM_TYPE&)`
@@ -58,6 +57,7 @@ following free functions must be implemented:
 * `ELEM_TYPE operator/(const ELEM_TYPE&, const ELEM_TYPE&)`
 * `ELEM_TYPE std::min(const ELEM_TYPE&, const ELEM_TYPE&)`
 * `ELEM_TYPE std::max(const ELEM_TYPE&, const ELEM_TYPE&)`
+
 The following member functions must also be implemented:
 * `ELEM_TYPE& ELEM_TYPE::operator=(const ELEM_TYPE&)`
 * `ELEM_TYPE& ELEM_TYPE::operator+=(const ELEM_TYPE&)`
