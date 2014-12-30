@@ -36,14 +36,13 @@ THE SOFTWARE.
 #ifndef MDSEARCH_BOUNDARY_H
 #define MDSEARCH_BOUNDARY_H
 
-#include "types.hpp"
 #include <iostream>
 
 namespace mdsearch
 {
 
     /* One-dimensional interval. */
-    template<typename ELEM_TYPE = Real>
+    template<typename ELEM_TYPE>
     struct Interval
     {
 
@@ -66,7 +65,7 @@ namespace mdsearch
 
     /* Boundary in D-dimensional space. This structure contains D
      * one-dimensional intervals. */
-    template<int D, typename ELEM_TYPE = Real>
+    template<int D, typename ELEM_TYPE>
     class Boundary
     {
 

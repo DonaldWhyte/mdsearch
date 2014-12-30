@@ -48,13 +48,13 @@ void testCoreTypes()
 {
     // Test point and boundary initialisation
     Real values[] = { 0.0f, 1.0f, 2.0f };
-    Point<3> point(values);
-    Interval<> intervals[3] = {
-        Interval<>(0.0f, 1.0f),
-        Interval<>(0.0f, 2.0f),
-        Interval<>(-1.0f, 1.0f)
+    Point<3, Real> point(values);
+    Interval<Real> intervals[3] = {
+        Interval<Real>(0.0f, 1.0f),
+        Interval<Real>(0.0f, 2.0f),
+        Interval<Real>(-1.0f, 1.0f)
     };
-    Boundary<3> boundary(&intervals[0]);
+    Boundary<3, Real> boundary(&intervals[0]);
 
     std::cout << point << " " << point.sum() << std::endl;
     std::cout << boundary << std::endl;

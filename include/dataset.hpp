@@ -48,7 +48,7 @@ namespace mdsearch
     /* Class which stores a collection of points with the same dimensionaliy.
      * Provides functionality to load points from std::vector objects or
      * text files. */
-    template<int D, typename ELEM_TYPE = Real>
+    template<int D, typename ELEM_TYPE>
     class Dataset
     {
 

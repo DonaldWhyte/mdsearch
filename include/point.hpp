@@ -36,14 +36,13 @@ THE SOFTWARE.
 #ifndef MDSEARCH_POINT_H
 #define MDSEARCH_POINT_H
 
-#include "types.hpp"
 #include <cstring>
 #include <iostream>
 
 namespace mdsearch
 {
 
-    template <int D, typename ELEM_TYPE = Real>
+    template <int D, typename ELEM_TYPE>
     class Point
     {
 

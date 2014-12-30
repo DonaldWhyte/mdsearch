@@ -52,7 +52,11 @@ using namespace mdsearch;
 // Test parameters
 static const int NUM_DIMENSIONS = 10;
 static const int NUM_TEST_POINTS = 100000;
-typedef std::vector< Point<NUM_DIMENSIONS> > PointList;
+
+typedef Point<NUM_DIMENSIONS, Real> PointType;
+typedef std::vector<PointType> PointList;
+typedef Boundary<NUM_DIMENSIONS, Real> BoundaryType;
+typedef Dataset<NUM_DIMENSIONS, Real> DatasetType;
 
 /* Functions used to generate random test dataset. */
 Real generateRandomNumber(Real minimum, Real maximum)
@@ -62,11 +66,11 @@ Real generateRandomNumber(Real minimum, Real maximum)
 
 PointList generateRandomPoints(unsigned int numPoints)
 {
-    std::vector< Point<NUM_DIMENSIONS> > points;
+    PointList points;
     Real test = generateRandomNumber(0.0f, 1.0f);
     for (unsigned int i = 0; (i < numPoints); i++)
     {
-        Point<NUM_DIMENSIONS> p;
+        PointType p;
         for (unsigned int d = 0; (d < NUM_DIMENSIONS); d++)
         {
             p[d] = generateRandomNumber(0.0f, 1.0f);
@@ -192,7 +196,7 @@ void timeStructure(const std::string& structureName, STRUCT_TYPE* structure, con
     std::cout << "...DONE." << std::endl;
 }
 
-void testCorrectness(const PointList& points, const Boundary<NUM_DIMENSIONS>& boundary)
+void testCorrectness(const PointList& points, const BoundaryType& boundary)
 {
     std::cout << "-----------------CORRECTNESS TESTS-----------------" << std::endl;
     KDTree<NUM_DIMENSIONS, Real> kdTree;
@@ -205,7 +209,7 @@ void testCorrectness(const PointList& points, const Boundary<NUM_DIMENSIONS>& bo
     testStructure< PyramidTree<NUM_DIMENSIONS, Real> >("pyramid_tree", &pyramidTree, points);
 }
 
-void testPerformance(const PointList& points, const Boundary<NUM_DIMENSIONS>& boundary)
+void testPerformance(const PointList& points, const BoundaryType& boundary)
 {
     std::cout << "-----------------PERFORMANCE TESTS-----------------" << std::endl;
     KDTree<NUM_DIMENSIONS, Real> kdTree;
@@ -223,9 +227,9 @@ int main(int argc, char* argv[])
 {
     // Generate test data using random number generator
     srand(time(NULL)); // seed generator to get different points every time!!
-    Dataset<NUM_DIMENSIONS> dataset;
+    DatasetType dataset;
     dataset.load( generateRandomPoints(NUM_TEST_POINTS) );
-    Boundary<NUM_DIMENSIONS> boundary = dataset.computeBoundary();
+    BoundaryType boundary = dataset.computeBoundary();
 
     testCorrectness(dataset.getPoints(), boundary);
     std::cout << std::endl;
