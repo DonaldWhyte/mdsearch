@@ -39,6 +39,7 @@ THE SOFTWARE.
 
 ******************************************************************************/
 
+#include "types.hpp"
 #include "dataset.hpp"
 #include "timing.hpp"
 #include "kdtree.hpp"

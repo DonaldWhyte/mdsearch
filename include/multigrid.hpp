@@ -43,7 +43,6 @@ THE SOFTWARE.
 
 ******************************************************************************/
 
-#include "types.hpp"
 #include "point.hpp"
 #include "boundary.hpp"
 #include <stack>
@@ -109,7 +108,7 @@ namespace mdsearch
          * reserves to store points.
         */
         Multigrid(const Boundary<D, ELEM_TYPE>& boundary,
-            Real intervalsPerDimension = 1000000000,
+            ELEM_TYPE intervalsPerDimension = 1000000000,
             int bucketSize = 8);
 
         /** Clear all points in Multigrid Tree and reset its spatial
@@ -149,12 +148,12 @@ namespace mdsearch
                               int currentDim,
                               MultigridNode* currentBucket);
         /** Normalise value into 0-1 range based on min-max interval. */
-        Real normaliseCoord(Real coord, Real min, Real max);
+        ELEM_TYPE normaliseCoord(ELEM_TYPE coord, ELEM_TYPE min, ELEM_TYPE max);
         /** Hash point using the vale of its dth coordinate. */
         HashType hashPoint(const Point<D, ELEM_TYPE>& p, int d);
         /** Retrieve pointer to bucket that contains points that have the
          * given hash value. */
-        MultigridNode* getBucketPointer(BucketMap* map, Real hashValue);
+        MultigridNode* getBucketPointer(BucketMap* map, ELEM_TYPE hashValue);
 
 
         /** Spatial boundary covered by Multigrid Tree. */
@@ -162,7 +161,7 @@ namespace mdsearch
         /** Determines how many buckets will be used for each dimension.
          * More buckets means more discrimination and less points in each
          * bucket, on average. */
-        Real intervalsPerDimension;
+        ELEM_TYPE intervalsPerDimension;
         /** Determines initial amount of memory a bucket reserves to store
          * points. */
         int bucketSize;
@@ -210,7 +209,7 @@ namespace mdsearch
 
     template<int D, typename ELEM_TYPE>
     Multigrid<D, ELEM_TYPE>::Multigrid(const Boundary<D, ELEM_TYPE>& boundary,
-        Real intervalsPerDimension, int bucketSize) :
+        ELEM_TYPE intervalsPerDimension, int bucketSize) :
         boundary(boundary),
         intervalsPerDimension(intervalsPerDimension),
         bucketSize(bucketSize)
@@ -219,7 +218,8 @@ namespace mdsearch
 
     template<int D, typename ELEM_TYPE>
     inline
-    void Multigrid<D, ELEM_TYPE>::clear(const Boundary<D, ELEM_TYPE>& newBoundary)
+    void Multigrid<D, ELEM_TYPE>::clear(
+        const Boundary<D, ELEM_TYPE>& newBoundary)
     {
         boundary = newBoundary;
         rootBuckets = BucketMap();
@@ -444,7 +444,9 @@ namespace mdsearch
 
     template<int D, typename ELEM_TYPE>
     inline
-    Real Multigrid<D, ELEM_TYPE>::normaliseCoord(Real coord, Real min, Real max)
+    ELEM_TYPE Multigrid<D, ELEM_TYPE>::normaliseCoord(ELEM_TYPE coord,
+                                                      ELEM_TYPE min,
+                                                      ELEM_TYPE max)
     {
         return (coord - min) / (max - min);
     }
@@ -461,7 +463,7 @@ namespace mdsearch
     template<int D, typename ELEM_TYPE>
     inline
     MultigridNode* Multigrid<D, ELEM_TYPE>::getBucketPointer(
-        BucketMap* map, Real hashValue)
+        BucketMap* map, ELEM_TYPE hashValue)
     {
         BucketMap::iterator it = map->find(hashValue);
         if (it == map->end())

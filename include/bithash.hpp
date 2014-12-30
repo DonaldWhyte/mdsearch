@@ -66,8 +66,8 @@ namespace mdsearch
     HashType BitHash<D, ELEM_TYPE>::hashPoint(const Point<D, ELEM_TYPE>& p)
     {
         size_t seed = 0;
-        const Real* coord = p.asArray();
-        const Real* end = coord + D;
+        const ELEM_TYPE* coord = p.asArray();
+        const ELEM_TYPE* end = coord + D;
         for (coord; (coord != end); ++coord)
         {
             boost::hash_combine(seed, *coord);

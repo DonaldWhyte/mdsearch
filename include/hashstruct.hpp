@@ -41,7 +41,7 @@ THE SOFTWARE.
 #ifndef MDSEARCH_HASHSTRUCT_H
 #define MDSEARCH_HASHSTRUCT_H
 
-#include "types.hpp"
+#include "types.hpp" // for HashType
 #include "point.hpp"
 #include <boost/unordered_map.hpp>
 

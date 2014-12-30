@@ -318,7 +318,7 @@ namespace mdsearch
                 dimension, nextCuttingDimension(cuttingDim));
             if (a && b) // if minimums were returned from both children
             {
-                Real minVal = std::min(node->point[dimension],
+                ELEM_TYPE minVal = std::min(node->point[dimension],
                     std::min((*a)[dimension], (*b)[dimension]));
                 if (minVal == node->point[dimension])
                 {
@@ -331,7 +331,7 @@ namespace mdsearch
             }
             else if (a) // if minimum was just returned from left child
             {
-                Real minVal = std::min(
+                ELEM_TYPE minVal = std::min(
                     node->point[dimension], (*a)[dimension]);
                 if (minVal == node->point[dimension])
                     return &node->point;
@@ -340,7 +340,7 @@ namespace mdsearch
             }
             else if (b) // if minimum was just returned from right child
             {
-                Real minVal = std::min(
+                ELEM_TYPE minVal = std::min(
                     node->point[dimension], (*b)[dimension]);
                 if (minVal == node->point[dimension])
                     return &node->point;
