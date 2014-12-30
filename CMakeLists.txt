@@ -17,9 +17,9 @@ set (EXECUTABLE_OUTPUT_PATH ${BUILD_DIR})
 set (LIBRARY_OUTPUT_PATH ${BUILD_DIR})
 
 # Search for Boost library
-set (Boost_USE_STATIC_LIBS ON) 
-set (Boost_USE_MULTITHREADED ON)  
-set (Boost_USE_STATIC_RUNTIME OFF) 
+set (Boost_USE_STATIC_LIBS ON)
+set (Boost_USE_MULTITHREADED ON)
+set (Boost_USE_STATIC_RUNTIME OFF)
 find_package (Boost 1.41.0 COMPONENTS program_options REQUIRED)
 include_directories (${Boost_INCLUDE_DIRS})
 set (BOOST_LIBRARYDIR ${BOOST_ROOT}/stage/lib/)
@@ -45,3 +45,17 @@ target_link_libraries ( mdsearch_core_tests rt )
 target_link_libraries ( mdsearch_structure_tests rt )
 
 #------------------------------------------------------------------------------
+
+add_custom_command(TARGET mdsearch_core_tests
+	POST_BUILD
+	COMMAND ./mdsearch_core_tests
+	WORKING_DIRECTORY ${BUILD_DIR}
+	COMMENT "Executing core data type tests"
+)
+
+add_custom_command(TARGET mdsearch_structure_tests
+	POST_BUILD
+	COMMAND ./mdsearch_structure_tests
+	WORKING_DIRECTORY ${BUILD_DIR}
+	COMMENT "Executing index structure correctness and performance tests"
+)
