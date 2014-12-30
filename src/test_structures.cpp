@@ -195,27 +195,27 @@ void timeStructure(const std::string& structureName, STRUCT_TYPE* structure, con
 void testCorrectness(const PointList& points, const Boundary<NUM_DIMENSIONS>& boundary)
 {
     std::cout << "-----------------CORRECTNESS TESTS-----------------" << std::endl;
-    KDTree<NUM_DIMENSIONS> kdTree;
-    testStructure< KDTree<NUM_DIMENSIONS> >("kd-tree", &kdTree, points);
-    Multigrid<NUM_DIMENSIONS> multigrid(boundary);
-    testStructure< Multigrid<NUM_DIMENSIONS> >("multigrid", &multigrid, points);
-    BitHash<NUM_DIMENSIONS> bitHash;
-    testStructure< BitHash<NUM_DIMENSIONS> >("bithash", &bitHash, points);
-    PyramidTree<NUM_DIMENSIONS> pyramidTree(boundary);
-    testStructure< PyramidTree<NUM_DIMENSIONS> >("pyramid_tree", &pyramidTree, points);
+    KDTree<NUM_DIMENSIONS, Real> kdTree;
+    testStructure< KDTree<NUM_DIMENSIONS, Real> >("kd-tree", &kdTree, points);
+    Multigrid<NUM_DIMENSIONS, Real> multigrid(boundary);
+    testStructure< Multigrid<NUM_DIMENSIONS, Real> >("multigrid", &multigrid, points);
+    BitHash<NUM_DIMENSIONS, Real> bitHash;
+    testStructure< BitHash<NUM_DIMENSIONS, Real> >("bithash", &bitHash, points);
+    PyramidTree<NUM_DIMENSIONS, Real> pyramidTree(boundary);
+    testStructure< PyramidTree<NUM_DIMENSIONS, Real> >("pyramid_tree", &pyramidTree, points);
 }
 
 void testPerformance(const PointList& points, const Boundary<NUM_DIMENSIONS>& boundary)
 {
     std::cout << "-----------------PERFORMANCE TESTS-----------------" << std::endl;
-    KDTree<NUM_DIMENSIONS> kdTree;
-    timeStructure< KDTree<NUM_DIMENSIONS> >("kd-tree", &kdTree, points);
-    Multigrid<NUM_DIMENSIONS> multigrid(boundary);
-    timeStructure< Multigrid<NUM_DIMENSIONS> >("multigrid", &multigrid, points);
-    BitHash<NUM_DIMENSIONS> bitHash;
-    timeStructure< BitHash<NUM_DIMENSIONS> >("bithash", &bitHash, points);
-    PyramidTree<NUM_DIMENSIONS> pyramidTree(boundary);
-    timeStructure< PyramidTree<NUM_DIMENSIONS> >("pyramid_tree", &pyramidTree, points);
+    KDTree<NUM_DIMENSIONS, Real> kdTree;
+    timeStructure< KDTree<NUM_DIMENSIONS, Real> >("kd-tree", &kdTree, points);
+    Multigrid<NUM_DIMENSIONS, Real> multigrid(boundary);
+    timeStructure< Multigrid<NUM_DIMENSIONS, Real> >("multigrid", &multigrid, points);
+    BitHash<NUM_DIMENSIONS, Real> bitHash;
+    timeStructure< BitHash<NUM_DIMENSIONS, Real> >("bithash", &bitHash, points);
+    PyramidTree<NUM_DIMENSIONS, Real> pyramidTree(boundary);
+    timeStructure< PyramidTree<NUM_DIMENSIONS, Real> >("pyramid_tree", &pyramidTree, points);
 }
 
 

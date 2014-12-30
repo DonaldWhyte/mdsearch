@@ -70,19 +70,19 @@ namespace mdsearch
 
     };
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     class Multigrid
     {
 
     public:
-        Multigrid(const Boundary<D>& boundary,
+        Multigrid(const Boundary<D, ELEM_TYPE>& boundary,
             Real intervalsPerDimension = 1000000000,
             int bucketSize = 8);
 
-        void clear(const Boundary<D>& newBoundary);
-        bool insert(const Point<D>& p);
-        bool query(const Point<D>& p);
-        bool remove(const Point<D>& p);
+        void clear(const Boundary<D, ELEM_TYPE>& newBoundary);
+        bool insert(const Point<D, ELEM_TYPE>& p);
+        bool query(const Point<D, ELEM_TYPE>& p);
+        bool remove(const Point<D, ELEM_TYPE>& p);
 
         int numPoints() const;
         int numBuckets() const;
@@ -96,24 +96,24 @@ namespace mdsearch
         int numBuckets(const BucketMap& map) const;
         /* Insert point into given bucket. The given dimension is used to hash
          * the point. */
-        bool insertIntoBucket(const Point<D>& p,
+        bool insertIntoBucket(const Point<D, ELEM_TYPE>& p,
                               int currentDim,
                               MultigridNode* currentBucket);
         /* Normalise value into 0-1 range based on min-max interval. */
         Real normaliseCoord(Real coord, Real min, Real max);
         /* Compute pyramid value of the given point, using the original
          * Pyramid-technique. */
-        HashType hashPoint(const Point<D>& p, int d);
+        HashType hashPoint(const Point<D, ELEM_TYPE>& p, int d);
         /* Retrieve pointer to bucket that contains points that have the 
          * given hash value. */
         MultigridNode* getBucketPointer(BucketMap* map, Real hashValue);
 
-        Boundary<D> boundary;
+        Boundary<D, ELEM_TYPE> boundary;
         Real intervalsPerDimension;
         int bucketSize;
 
         BucketMap rootBuckets;
-        std::vector< Point<D> > points;
+        std::vector< Point<D, ELEM_TYPE> > points;
         std::stack<int> unusedIndices;
 
     };
@@ -149,8 +149,8 @@ namespace mdsearch
         return pointIndices.size();
     }
 
-    template<int D>
-    Multigrid<D>::Multigrid(const Boundary<D>& boundary,
+    template<int D, typename ELEM_TYPE>
+    Multigrid<D, ELEM_TYPE>::Multigrid(const Boundary<D, ELEM_TYPE>& boundary,
         Real intervalsPerDimension, int bucketSize) :
         boundary(boundary),
         intervalsPerDimension(intervalsPerDimension),
@@ -158,16 +158,16 @@ namespace mdsearch
     {
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    void Multigrid<D>::clear(const Boundary<D>& newBoundary)
+    void Multigrid<D, ELEM_TYPE>::clear(const Boundary<D, ELEM_TYPE>& newBoundary)
     {
         boundary = newBoundary;
         rootBuckets = BucketMap();
     }
 
-    template<int D>
-    bool Multigrid<D>::insert(const Point<D>& p)
+    template<int D, typename ELEM_TYPE>
+    bool Multigrid<D, ELEM_TYPE>::insert(const Point<D, ELEM_TYPE>& p)
     {
         int currentDim = 0;
         HashType pyVal = hashPoint(p, currentDim);
@@ -192,8 +192,8 @@ namespace mdsearch
         }
     }
 
-    template<int D>
-    bool Multigrid<D>::query(const Point<D>& p)
+    template<int D, typename ELEM_TYPE>
+    bool Multigrid<D, ELEM_TYPE>::query(const Point<D, ELEM_TYPE>& p)
     {
         int currentDim = 0;
         HashType pyVal = hashPoint(p, currentDim);
@@ -222,8 +222,8 @@ namespace mdsearch
         return false;
     }
 
-    template<int D>
-    bool Multigrid<D>::remove(const Point<D>& p)
+    template<int D, typename ELEM_TYPE>
+    bool Multigrid<D, ELEM_TYPE>::remove(const Point<D, ELEM_TYPE>& p)
     {
         int currentDim = 0;
         HashType pyVal = hashPoint(p, currentDim);
@@ -267,29 +267,30 @@ namespace mdsearch
         return false;
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    int Multigrid<D>::numPoints() const
+    int Multigrid<D, ELEM_TYPE>::numPoints() const
     {
         return points.size();
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    int Multigrid<D>::numBuckets() const
+    int Multigrid<D, ELEM_TYPE>::numBuckets() const
     {
         return numBuckets(rootBuckets);
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    double Multigrid<D>::averageBucketSize() const
+    double Multigrid<D, ELEM_TYPE>::averageBucketSize() const
     {
         return points.size() / static_cast<double>(numBuckets());
     }
 
-    template<int D>
-    int Multigrid<D>::numBuckets(const Multigrid<D>::BucketMap& map) const
+    template<int D, typename ELEM_TYPE>
+    int Multigrid<D, ELEM_TYPE>::numBuckets(
+        const Multigrid<D, ELEM_TYPE>::BucketMap& map) const
     {
         int total = 0;
         for (BucketMap::const_iterator it = map.begin();
@@ -303,14 +304,16 @@ namespace mdsearch
         return total;
     }
 
-    template<int D>
-    bool Multigrid<D>::insertIntoBucket(const Point<D>& p, int currentDim,
+    template<int D, typename ELEM_TYPE>
+    bool Multigrid<D, ELEM_TYPE>::insertIntoBucket(
+        const Point<D, ELEM_TYPE>& p,
+        int currentDim,
         MultigridNode* currentBucket)
     {
         if (currentBucket->isLeaf)
         {
             // Insert point into leaf since there's space!
-            // (or if there aren't enough dimensions to discriminate against...)
+            // (or if there aren't enough dimensions to discriminate against)
             if (currentBucket->numPoints() < bucketSize || currentDim < D)
             {
                 for (unsigned int i = 0; (i < currentBucket->numPoints()); i++)
@@ -380,24 +383,25 @@ namespace mdsearch
         }
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    Real Multigrid<D>::normaliseCoord(Real coord, Real min, Real max)
+    Real Multigrid<D, ELEM_TYPE>::normaliseCoord(Real coord, Real min, Real max)
     {
         return (coord - min) / (max - min);
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    HashType Multigrid<D>::hashPoint(const Point<D>& p, int d)
+    HashType Multigrid<D, ELEM_TYPE>::hashPoint(const Point<D, ELEM_TYPE>& p,
+                                                int d)
     {
         return normaliseCoord(p[d], boundary[d].min, boundary[d].max)
                  * intervalsPerDimension;
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    MultigridNode* Multigrid<D>::getBucketPointer(
+    MultigridNode* Multigrid<D, ELEM_TYPE>::getBucketPointer(
         BucketMap* map, Real hashValue)
     {
         BucketMap::iterator it = map->find(hashValue);

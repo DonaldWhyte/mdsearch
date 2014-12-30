@@ -64,31 +64,33 @@ namespace mdsearch
         vec.erase(vec.end() - 1);
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     class HashStructure
     {
 
     public:
+        typedef std::vector<ELEM_TYPE> ValueList;
+
         /* Clear all points currently stored in the structure. */
         void clear();
 
         /* Insert point into the Pyramid Tree.
          * Returns true if the point was inserted successfully and
          * false if the point is already stored in the structure. */
-        bool insert(const Point<D>& point);
+        bool insert(const Point<D, ELEM_TYPE>& point);
         /* Remove point from the tree.
          * Returns true if the point was removed successfully and
          * false if the point was not being stored. */
-        bool remove(const Point<D>& point);
+        bool remove(const Point<D, ELEM_TYPE>& point);
         /* Return true if the given point is being stored in the structure. */
-        bool query(const Point<D>& point);
+        bool query(const Point<D, ELEM_TYPE>& point);
 
         /* Return total number of points currently stored in the structure. */
         unsigned int numPointsStored() const;
         /* Return total number of buckets in structure. */
         unsigned int numBuckets() const;
         /* Return average number of points stored in a bucket. */
-        Real averagePointsPerBucket() const;
+        ELEM_TYPE averagePointsPerBucket() const;
         /* Return minimum number of points stored in a single bucket. */
         unsigned int minPointsPerBucket() const;
         /* Return maximum number of points stored in a single bucket. */
@@ -97,22 +99,22 @@ namespace mdsearch
     protected:
         struct Bucket
         {
-            std::vector< Point<D> > points;
-            RealList pointSums;
+            std::vector< Point<D, ELEM_TYPE> > points;
+            ValueList pointSums;
         };
         typedef boost::unordered_map<HashType, Bucket> OneDMap;
 
         /* Retrieve bucket containing given point. 
          * Return NULL if no bucket contains the point. */
-        Bucket* getContainingBucket(const Point<D>& point);
+        Bucket* getContainingBucket(const Point<D, ELEM_TYPE>& point);
 
         /* Get index of given point in given bucket.
          * Return -1 if point could not be found in bucket. */
-        int getPointIndexInBucket(const Point<D>& point,
+        int getPointIndexInBucket(const Point<D, ELEM_TYPE>& point,
                                   const Bucket* bucket) const;
 
         /* Hashes point to one-dimensional value. */
-        virtual HashType hashPoint(const Point<D>& p) = 0;
+        virtual HashType hashPoint(const Point<D, ELEM_TYPE>& p) = 0;
 
         // Unordered_map for storing the points
         // Key = hashed 1D representation of point
@@ -121,18 +123,18 @@ namespace mdsearch
 
     };
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    void HashStructure<D>::clear()
+    void HashStructure<D, ELEM_TYPE>::clear()
     {
         // NOTE: Using assignment not clear() to ensure memory is de-allocated
         // (through destructors of containers)
         hashMap = OneDMap();
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    bool HashStructure<D>::insert(const Point<D>& point)
+    bool HashStructure<D, ELEM_TYPE>::insert(const Point<D, ELEM_TYPE>& point)
     {
         // Retrieve containing bucket by hashing point into key
         HashType searchKey = hashPoint(point);
@@ -166,9 +168,9 @@ namespace mdsearch
         }
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    bool HashStructure<D>::remove(const Point<D>& point)
+    bool HashStructure<D, ELEM_TYPE>::remove(const Point<D, ELEM_TYPE>& point)
     {
         Bucket* bucket = getContainingBucket(point);
         // Bucket has been found, point MIGHT be stored in structure
@@ -198,17 +200,17 @@ namespace mdsearch
         }            
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    bool HashStructure<D>::query(const Point<D>& point)
+    bool HashStructure<D, ELEM_TYPE>::query(const Point<D, ELEM_TYPE>& point)
     {
         Bucket* bucket = getContainingBucket(point);
         return (bucket && (getPointIndexInBucket(point, bucket) != -1));
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    unsigned int HashStructure<D>::numPointsStored() const
+    unsigned int HashStructure<D, ELEM_TYPE>::numPointsStored() const
     {
         int total = 0;
         for (typename OneDMap::const_iterator it = hashMap.begin();
@@ -219,23 +221,23 @@ namespace mdsearch
         return total;
     }
    
-    template<int D> 
+    template<int D, typename ELEM_TYPE> 
     inline
-    unsigned int HashStructure<D>::numBuckets() const
+    unsigned int HashStructure<D, ELEM_TYPE>::numBuckets() const
     {
         return hashMap.size();
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    Real HashStructure<D>::averagePointsPerBucket() const
+    ELEM_TYPE HashStructure<D, ELEM_TYPE>::averagePointsPerBucket() const
     {
         return numPointsStored() / numBuckets();
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    unsigned int HashStructure<D>::minPointsPerBucket() const
+    unsigned int HashStructure<D, ELEM_TYPE>::minPointsPerBucket() const
     {
         size_t minCount = 0;
         for (typename OneDMap::const_iterator it = hashMap.begin();
@@ -246,9 +248,9 @@ namespace mdsearch
         return minCount;
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    unsigned int HashStructure<D>::maxPointsPerBucket() const
+    unsigned int HashStructure<D, ELEM_TYPE>::maxPointsPerBucket() const
     {
         size_t maxCount = 0;
         for (typename OneDMap::const_iterator it = hashMap.begin();
@@ -259,10 +261,11 @@ namespace mdsearch
         return maxCount;
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    typename HashStructure<D>::Bucket* HashStructure<D>::getContainingBucket(
-        const Point<D>& point)
+    typename HashStructure<D, ELEM_TYPE>::Bucket*
+    HashStructure<D, ELEM_TYPE>::getContainingBucket(
+        const Point<D, ELEM_TYPE>& point)
     {
         // Hash point into one-dimensional key
         HashType searchKey = hashPoint(point);
@@ -278,14 +281,14 @@ namespace mdsearch
         }
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    int HashStructure<D>::getPointIndexInBucket(
-        const Point<D>& point,
-        const typename HashStructure<D>::Bucket* bucket) const
+    int HashStructure<D, ELEM_TYPE>::getPointIndexInBucket(
+        const Point<D, ELEM_TYPE>& point,
+        const typename HashStructure<D, ELEM_TYPE>::Bucket* bucket) const
     {
         // Search through bucket to see if it contains the given point
-        Real pSum = point.sum();
+        ELEM_TYPE pSum = point.sum();
         for (int index = 0; (index < bucket->points.size()); index++)
         {
             if (pSum == bucket->pointSums[index]

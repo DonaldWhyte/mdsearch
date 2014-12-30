@@ -44,7 +44,7 @@ THE SOFTWARE.
 namespace mdsearch
 {
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     class KDTree
     {
 
@@ -53,18 +53,18 @@ namespace mdsearch
         ~KDTree();
 
         void clear();
-        bool insert(const Point<D>& p);
-        bool query(const Point<D>& p);
-        bool remove(const Point<D>& p);
+        bool insert(const Point<D, ELEM_TYPE>& p);
+        bool query(const Point<D, ELEM_TYPE>& p);
+        bool remove(const Point<D, ELEM_TYPE>& p);
 
     private:
         struct Node
         {
-            Point<D> point;
+            Point<D, ELEM_TYPE> point;
             Node* leftChild;
             Node* rightChild;
 
-            Node(const Point<D>& p)
+            Node(const Point<D, ELEM_TYPE>& p)
             : point(p), leftChild(NULL), rightChild(NULL)
             {
 
@@ -77,36 +77,39 @@ namespace mdsearch
         };
 
         unsigned int nextCuttingDimension(unsigned int cuttingDim); 
-        Node* recursiveRemove(Node* node, const Point<D>& p,
-                              unsigned int cuttingDim, bool* removed);
-        const Point<D>* findMinimum(Node* node, unsigned int dimension,
-                                    unsigned int cuttingDim);
+        Node* recursiveRemove(Node* node,
+                              const Point<D, ELEM_TYPE>& p,
+                              unsigned int cuttingDim,
+                              bool* removed);
+        const Point<D, ELEM_TYPE>* findMinimum(Node* node,
+                                               unsigned int dimension,
+                                               unsigned int cuttingDim);
 
     private:
         Node* root;
 
     };
 
-    template<int D>
-    KDTree<D>::KDTree() : root(NULL)
+    template<int D, typename ELEM_TYPE>
+    KDTree<D, ELEM_TYPE>::KDTree() : root(NULL)
     {
     }
 
-    template<int D>
-    KDTree<D>::~KDTree()
+    template<int D, typename ELEM_TYPE>
+    KDTree<D, ELEM_TYPE>::~KDTree()
     {
         delete root;
     }
 
-    template<int D>
-    void KDTree<D>::clear()
+    template<int D, typename ELEM_TYPE>
+    void KDTree<D, ELEM_TYPE>::clear()
     {
         delete root;
         root = NULL;
     }
 
-    template<int D>
-    bool KDTree<D>::insert(const Point<D>& p)
+    template<int D, typename ELEM_TYPE>
+    bool KDTree<D, ELEM_TYPE>::insert(const Point<D, ELEM_TYPE>& p)
     {
         Node* previous = NULL; // previous node traversed
         // Set to true if 'current' is left child of 'previous'
@@ -155,8 +158,8 @@ namespace mdsearch
         }
     }
 
-    template<int D>
-    bool KDTree<D>::query(const Point<D>& p)
+    template<int D, typename ELEM_TYPE>
+    bool KDTree<D, ELEM_TYPE>::query(const Point<D, ELEM_TYPE>& p)
     {
         Node* current = root;
         unsigned int cuttingDim = 0;
@@ -179,25 +182,28 @@ namespace mdsearch
         return false;
     }
 
-    template<int D>
-    bool KDTree<D>::remove(const Point<D>& p)
+    template<int D, typename ELEM_TYPE>
+    bool KDTree<D, ELEM_TYPE>::remove(const Point<D, ELEM_TYPE>& p)
     {
         bool removed = false;
         root = recursiveRemove(root, p, 0, &removed);
         return removed;
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    unsigned int KDTree<D>::nextCuttingDimension(unsigned int cuttingDim)
+    unsigned int KDTree<D, ELEM_TYPE>::nextCuttingDimension(
+        unsigned int cuttingDim)
     {
         return (cuttingDim + 1) % D;
     }    
 
-    template<int D>
-    typename KDTree<D>::Node* KDTree<D>::recursiveRemove(
-        typename KDTree<D>::Node* node, const Point<D>& p,
-        unsigned int cuttingDim, bool* removed)
+    template<int D, typename ELEM_TYPE>
+    typename KDTree<D, ELEM_TYPE>::Node* KDTree<D, ELEM_TYPE>::recursiveRemove(
+        typename KDTree<D, ELEM_TYPE>::Node* node,
+        const Point<D, ELEM_TYPE>& p,
+        unsigned int cuttingDim,
+        bool* removed)
     {
         if (node == NULL)
         {
@@ -253,9 +259,9 @@ namespace mdsearch
         return node;
     }
 
-    template<int D>
-    const Point<D>* KDTree<D>::findMinimum(Node* node, unsigned int dimension,
-                                unsigned int cuttingDim)
+    template<int D, typename ELEM_TYPE>
+    const Point<D, ELEM_TYPE>* KDTree<D, ELEM_TYPE>::findMinimum(
+        Node* node, unsigned int dimension, unsigned int cuttingDim)
     {
         // Reached leaf node
         if (node == NULL)
@@ -275,9 +281,9 @@ namespace mdsearch
         // Otherwise, we have to search BOTH children
         else
         {
-            const Point<D>* a = findMinimum(node->leftChild,
+            const Point<D, ELEM_TYPE>* a = findMinimum(node->leftChild,
                 dimension, nextCuttingDimension(cuttingDim));
-            const Point<D>* b = findMinimum(node->rightChild,
+            const Point<D, ELEM_TYPE>* b = findMinimum(node->rightChild,
                 dimension, nextCuttingDimension(cuttingDim));
             if (a && b) // if minimums were returned from both children
             {

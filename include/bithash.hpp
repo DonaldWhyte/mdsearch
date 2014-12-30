@@ -52,17 +52,17 @@ THE SOFTWARE.
 namespace mdsearch
 {
 
-    template<int D>
-    class BitHash : public HashStructure<D>
+    template<int D, typename ELEM_TYPE>
+    class BitHash : public HashStructure<D, ELEM_TYPE>
     {
 
     protected:
-        virtual HashType hashPoint(const Point<D>& p);
+        virtual HashType hashPoint(const Point<D, ELEM_TYPE>& p);
 
     };
 
-    template<int D>
-    HashType BitHash<D>::hashPoint(const Point<D>& p)
+    template<int D, typename ELEM_TYPE>
+    HashType BitHash<D, ELEM_TYPE>::hashPoint(const Point<D, ELEM_TYPE>& p)
     {
         size_t seed = 0;
         const Real* coord = p.asArray();

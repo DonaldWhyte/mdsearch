@@ -48,14 +48,14 @@ THE SOFTWARE.
 namespace mdsearch
 {
 
-    template<int D>
-    class PyramidTree : public HashStructure<D>
+    template<int D, typename ELEM_TYPE>
+    class PyramidTree : public HashStructure<D, ELEM_TYPE>
     {
 
     public:
-        PyramidTree(const Boundary<D>& boundary);
+        PyramidTree(const Boundary<D, ELEM_TYPE>& boundary);
 
-        void clear(const Boundary<D>& newBoundary);
+        void clear(const Boundary<D, ELEM_TYPE>& newBoundary);
 
     protected:
         static const Real MAX_BUCKET_NUMBER = 30000000000;
@@ -67,18 +67,19 @@ namespace mdsearch
         Real pyramidHeight(Real coord, Real min, Real max);
         /* Compute pyramid value of the given point, using the
          * Pyramid-technique. */
-        virtual HashType hashPoint(const Point<D>& p);
+        virtual HashType hashPoint(const Point<D, ELEM_TYPE>& p);
 
         // Entire region of space the Pyramid tree covers
         // (points outside this region are ignored)
-        Boundary<D> boundary;
+        Boundary<D, ELEM_TYPE> boundary;
         // Interval between buckets
         Real bucketInterval;
 
     };
 
-    template<int D>
-    PyramidTree<D>::PyramidTree(const Boundary<D>& boundary)
+    template<int D, typename ELEM_TYPE>
+    PyramidTree<D, ELEM_TYPE>::PyramidTree(
+        const Boundary<D, ELEM_TYPE>& boundary)
     : boundary(boundary)
     {
         // Compute the interval between buckets 
@@ -86,29 +87,32 @@ namespace mdsearch
         bucketInterval = floor(bucketInterval);
     }
 
-    template<int D>
-    void PyramidTree<D>::clear(const Boundary<D>& newBoundary)
+    template<int D, typename ELEM_TYPE>
+    void PyramidTree<D, ELEM_TYPE>::clear(
+        const Boundary<D, ELEM_TYPE>& newBoundary)
     {
-        HashStructure<D>::clear();
+        HashStructure<D, ELEM_TYPE>::clear();
         boundary = newBoundary;
     }
 
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    Real PyramidTree<D>::normaliseCoord(Real coord, Real min, Real max)
+    Real PyramidTree<D, ELEM_TYPE>::normaliseCoord(Real coord,
+                                                   Real min, Real max)
     {
         return (coord - min) / (max - min);
     }
     
-    template<int D>
+    template<int D, typename ELEM_TYPE>
     inline
-    Real PyramidTree<D>::pyramidHeight(Real coord, Real min, Real max)
+    Real PyramidTree<D, ELEM_TYPE>::pyramidHeight(Real coord,
+                                                  Real min, Real max)
     {
         return std::abs(0.5f - normaliseCoord(coord, min, max));
     }
 
-    template<int D>
-    HashType PyramidTree<D>::hashPoint(const Point<D>& p)
+    template<int D, typename ELEM_TYPE>
+    HashType PyramidTree<D, ELEM_TYPE>::hashPoint(const Point<D, ELEM_TYPE>& p)
     {
         int index = 0;
         int dMax = 0;

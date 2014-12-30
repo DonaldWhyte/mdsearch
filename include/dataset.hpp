@@ -53,7 +53,7 @@ namespace mdsearch
     {
 
     public:
-        typedef std::vector< Point<D> > PointList;
+        typedef std::vector< Point<D, ELEM_TYPE> > PointList;
 
         /* Add all given points to dataset. */
         void load(const PointList& newPoints);
@@ -72,7 +72,7 @@ namespace mdsearch
 
         /* Compute minimum bounding hyper-rectangle that contains all 
          * the points in the dataset. */
-        Boundary<D> computeBoundary() const;
+        Boundary<D, ELEM_TYPE> computeBoundary() const;
 
         /* Retrieve all points stored in dataset. */
         const PointList& getPoints() const;
@@ -132,7 +132,7 @@ namespace mdsearch
             {
                 file >> temp[j];
             }
-            points.push_back(Point<D>(temp));
+            points.push_back(Point<D, ELEM_TYPE>(temp));
 
             // If we have reached the end of the file, STOP and don't try
             // reading any more points
@@ -142,7 +142,7 @@ namespace mdsearch
     }
 
     template<int D, typename ELEM_TYPE>
-    Boundary<D> Dataset<D, ELEM_TYPE>::computeBoundary() const
+    Boundary<D, ELEM_TYPE> Dataset<D, ELEM_TYPE>::computeBoundary() const
     {
         Boundary<D, ELEM_TYPE> boundary(
             Interval<ELEM_TYPE>(0, 0)
@@ -151,7 +151,7 @@ namespace mdsearch
         if (!points.empty())
         {
             // Use first point for dimensionality and initial boundary
-            const Point<D>& firstPoint = points[0];
+            const Point<D, ELEM_TYPE>& firstPoint = points[0];
             for (unsigned int d = 0; (d < D); d++)
             {
                 boundary[d].min = firstPoint[d];
