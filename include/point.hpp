@@ -130,16 +130,16 @@ namespace mdsearch
 
     template<int D>
     inline
-    Real Point<D>::operator[](int index) const
+    Real Point<D>::operator[](int d) const
     {
-        return values[index];
+        return values[d];
     }
 
     template<int D>
     inline
-    Real& Point<D>::operator[](int index)
+    Real& Point<D>::operator[](int d)
     {
-        return values[index];
+        return values[d];
     }
 
     template<int D>
