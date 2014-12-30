@@ -54,13 +54,7 @@ namespace mdsearch
         typedef std::vector< Point<D> > PointList;
 
         /* Add all given points to dataset. */
-        void load(const PointList& newPoints)
-        {
-            // Pre-allocate memory in one sys call
-            points.reserve(points.size() + newPoints.size());
-            // Append given points to end of current point list
-            points.insert(points.end(), newPoints.begin(), newPoints.end());
-        }
+        void load(const PointList& newPoints);
 
         /* Add all points in text file with given name to dataset. 
          * Format of text file:
@@ -72,97 +66,121 @@ namespace mdsearch
          *
          * where 'd' is the dimensionality of the points and 'n'
          * is the number of points in the dataset. */
-        void load(const std::string& filename)
-        {
-            // Open specified file and just do nothing if
-            // the file does not exist
-            std::ifstream file(filename.c_str());
-            if (!file.is_open())
-                return;
-
-            // Read header information
-            std::string numDimensionsStr;
-            file >> numDimensionsStr;
-            std::string numPointsStr;
-            file >> numPointsStr;
-            // Convert strings to integers
-            int numDimensions = 0;
-            int numPoints = 0;
-            try
-            {
-                numDimensions = boost::lexical_cast<int>(numDimensionsStr);
-                numPoints = boost::lexical_cast<int>(numPointsStr);
-            }
-            catch (boost::bad_lexical_cast& ex) // not integers -- invalid file!!
-            {
-                return;
-            }
-            // Only continue reading points if the points have at least
-            // one dimension and there is at least one point in the dataset
-            if (numDimensions < 1 || numPoints < 1)
-                return;
-
-            // Pre-allocate memory to store all the specified points
-            points.reserve(points.size() + numPoints);
-            // Treat the rest of lines as points
-            Real temp[D]; // temporary stores point's values
-            for (unsigned int i = 0; (i < numPoints); i++)
-            {
-                for (unsigned int j = 0; (j < numDimensions); j++)
-                {
-                    file >> temp[j];
-                }
-                points.push_back(Point<D>(temp));
-
-                // If we have reached the end of the file, STOP and don't try
-                // reading any more points
-                if (file.eof())
-                    break;
-            }
-        }
+        void load(const std::string& filename);
 
         /* Compute minimum bounding hyper-rectangle that contains all 
          * the points in the dataset. */
-        Boundary<D> computeBoundary() const
-        {
-            Boundary<D> boundary(Interval(0, 0));
-
-            if (!points.empty())
-            {
-                // Use first point for dimensionality and initial boundary
-                const Point<D>& firstPoint = points[0];
-                for (unsigned int d = 0; (d < D); d++)
-                {
-                    boundary[d].min = firstPoint[d];
-                    boundary[d].max = firstPoint[d];
-                }
-                // Now search through rest of points in dataset to find
-                // minimum and maximum values for each dimension
-                for (typename PointList::const_iterator p = points.begin() + 1; (p != points.end()); p++)
-                {
-                    for (unsigned int d = 0; (d < D); d++)
-                    {
-                        if ((*p)[d] < boundary[d].min)
-                            boundary[d].min = (*p)[d];
-                        else if ((*p)[d] > boundary[d].max)
-                            boundary[d].max = (*p)[d];
-                    }
-                }
-            }
-
-            return boundary;
-        }
+        Boundary<D> computeBoundary() const;
 
         /* Retrieve all points stored in dataset. */
-        const PointList& getPoints() const
-        {
-            return points;
-        }
+        const PointList& getPoints() const;
 
     private:
         PointList points;
 
     };
+
+    template<int D>
+    void Dataset<D>::load(const PointList& newPoints)
+    {
+        // Pre-allocate memory in one sys call
+        points.reserve(points.size() + newPoints.size());
+        // Append given points to end of current point list
+        points.insert(points.end(), newPoints.begin(), newPoints.end());
+    }
+
+    template <int D>
+    void Dataset<D>::load(const std::string& filename)
+    {
+        // Open specified file and just do nothing if
+        // the file does not exist
+        std::ifstream file(filename.c_str());
+        if (!file.is_open())
+            return;
+
+        // Read header information
+        std::string numDimensionsStr;
+        file >> numDimensionsStr;
+        std::string numPointsStr;
+        file >> numPointsStr;
+        // Convert strings to integers
+        int numDimensions = 0;
+        int numPoints = 0;
+        try
+        {
+            numDimensions = boost::lexical_cast<int>(numDimensionsStr);
+            numPoints = boost::lexical_cast<int>(numPointsStr);
+        }
+        catch (boost::bad_lexical_cast& ex) // not integers -- invalid file!!
+        {
+            return;
+        }
+        // Only continue reading points if the points have at least
+        // one dimension and there is at least one point in the dataset
+        if (numDimensions < 1 || numPoints < 1)
+            return;
+
+        // Pre-allocate memory to store all the specified points
+        points.reserve(points.size() + numPoints);
+        // Treat the rest of lines as points
+        Real temp[D]; // temporary stores point's values
+        for (unsigned int i = 0; (i < numPoints); i++)
+        {
+            for (unsigned int j = 0; (j < numDimensions); j++)
+            {
+                file >> temp[j];
+            }
+            points.push_back(Point<D>(temp));
+
+            // If we have reached the end of the file, STOP and don't try
+            // reading any more points
+            if (file.eof())
+                break;
+        }
+    }
+
+    template <int D>
+    Boundary<D> Dataset<D>::computeBoundary() const
+    {
+        Boundary<D> boundary(Interval(0, 0));
+
+        if (!points.empty())
+        {
+            // Use first point for dimensionality and initial boundary
+            const Point<D>& firstPoint = points[0];
+            for (unsigned int d = 0; (d < D); d++)
+            {
+                boundary[d].min = firstPoint[d];
+                boundary[d].max = firstPoint[d];
+            }
+            // Now search through rest of points in dataset to find
+            // minimum and maximum values for each dimension
+            for (typename PointList::const_iterator p = points.begin() + 1;
+                (p != points.end()); p++)
+            {
+                for (unsigned int d = 0; (d < D); d++)
+                {
+                    if ((*p)[d] < boundary[d].min)
+                    {
+                        boundary[d].min = (*p)[d];
+                    }
+                    else if ((*p)[d] > boundary[d].max)
+                    {
+                        boundary[d].max = (*p)[d];
+                    }
+                }
+            }
+        }
+
+        return boundary;
+    }
+
+    template<int D>
+    inline
+    const typename Dataset<D>::PointList& Dataset<D>::getPoints() const
+    {
+        return points;
+    }
 
 }
 

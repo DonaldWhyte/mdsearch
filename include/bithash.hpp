@@ -57,19 +57,22 @@ namespace mdsearch
     {
 
     protected:
-        virtual HashType hashPoint(const Point<D>& p)
-        {
-            size_t seed = 0;
-            const Real* coord = &(p.values[0]);
-            const Real* end = coord + D;
-            for (coord; (coord != end); ++coord)
-            {
-                boost::hash_combine(seed, *coord);
-            }
-            return seed;            
-        }
+        virtual HashType hashPoint(const Point<D>& p);
 
     };
+
+    template<int D>
+    HashType BitHash<D>::hashPoint(const Point<D>& p)
+    {
+        size_t seed = 0;
+        const Real* coord = &(p.values[0]);
+        const Real* end = coord + D;
+        for (coord; (coord != end); ++coord)
+        {
+            boost::hash_combine(seed, *coord);
+        }
+        return seed;
+    }
 
 }
 

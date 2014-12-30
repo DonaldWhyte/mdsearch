@@ -18,6 +18,7 @@ Real generateRandomNumber(Real minimum, Real maximum)
 {
     return minimum + static_cast<float>(rand()) / static_cast<float>(RAND_MAX / (maximum - minimum));
 }
+
 PointList generateRandomPoints(unsigned int numPoints)
 {
     std::vector< Point<NUM_DIMENSIONS> > points;
