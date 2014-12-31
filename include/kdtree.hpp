@@ -148,7 +148,7 @@ namespace mdsearch
         Node* current = m_root;
         unsigned int cuttingDim = 0;
 
-        // Loop util true/false returned - guaranteed to terminate eventually!
+        // Loop until true/false returned - guaranteed to terminate eventually!
         while (true)
         {
             if (current == NULL)

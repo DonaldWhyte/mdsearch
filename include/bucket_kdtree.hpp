@@ -4,7 +4,13 @@ mdsearch - Lightweight C++ library implementing a collection of
            multi-dimensional search structures
 
 File:        bucket_kdtree.hpp
-Description: TODO
+Description: Implements bucket kd-tree index structure. This is similar to the
+             point kd-tree in that it uses a different dimension for each
+             partition of the space, but how it chooses the dimension and the
+             value to cut differs. It collects several points in a single node,
+             and then uses those points to come up with a smarter partitioning
+             strategy (rather than basing the partition on a single point,
+             like the point kd-tree).
 
 *******************************************************************************
 
@@ -37,11 +43,347 @@ THE SOFTWARE.
 
 #include "point.hpp"
 #include <algorithm>
+#include <cassert>
 
 namespace mdsearch
 {
 
-    /** TODO */
+    /** Maximum number of points allowed in a bucket. */
+    static const size_t MAX_POINTS_PER_BUCKET = 8;
+
+    /** Splits points using a single dimension (D - 1 hyperplane). */
+    template<int D, typename ELEM_TYPE>
+    class SplitPredicate
+    {
+
+    public:
+        SplitPredicate(int cuttingDimension, ELEM_TYPE cuttingValue);
+
+        /** Return true if point lies on the lower end of the cutting plane. */
+        bool operator()(const Point<D, ELEM_TYPE>& p);
+
+    private:
+        /** Dimension to use when partitioning points. */
+        int m_cuttingDimension;
+        /** Value in cutting dimension at which points are partitioned. */
+        ELEM_TYPE m_cuttingValue;
+
+    };
+
+    template<int D, typename ELEM_TYPE>
+    SplitPredicate<D, ELEM_TYPE>::SplitPredicate(int cuttingDimension,
+                                                 ELEM_TYPE cuttingValue)
+    : m_cuttingDimension(cuttingDimension), m_cuttingValue(cuttingValue)
+    {
+    }
+
+    template<int D, typename ELEM_TYPE>
+    bool SplitPredicate<D, ELEM_TYPE>::operator()(const Point<D, ELEM_TYPE>& p)
+    {
+        return (p[m_cuttingDimension] < m_cuttingValue);
+    }
+
+    /* Represents single node in bucket kd-tree. */
+    template<int D, typename ELEM_TYPE>
+    class BucketKDTreeNode
+    {
+
+    public:
+        typedef Point<D, ELEM_TYPE> PointType;
+        typedef std::vector<PointType> PointList;
+
+        /** Construct leaf node with no points. */
+        BucketKDTreeNode();
+        /** Construct leaf node that stores given point. */
+        BucketKDTreeNode(const PointType& p);
+        /** Construct leaf node that stores given points. */
+        BucketKDTreeNode(const PointList& points);
+
+        /** Delete node and both of its children. */
+        ~BucketKDTreeNode();
+
+        /** Return true if node contains given point. */
+        bool contains(const PointType& p);
+
+        inline bool isLeaf() const { return m_isLeaf; }
+        inline const PointList& points() const { return m_points; }
+        inline BucketKDTreeNode<D, ELEM_TYPE>* leftChild()
+        {
+            return m_leftChild;
+        }
+        inline BucketKDTreeNode<D, ELEM_TYPE>* rightChild()
+        {
+            return m_rightChild;
+        }
+        inline int cuttingDimension() const { return m_cuttingDimension; }
+        inline ELEM_TYPE cuttingValue() const { return m_cuttingValue; }
+
+        inline void setIsLeaf(bool leaf) { m_isLeaf = leaf; }
+        inline void setCuttingDimension(bool cuttingDim)
+        {
+            m_cuttingDimension = cuttingDim;
+        }
+        inline void setCuttingValue(bool cuttingVal)
+        {
+            m_cuttingValue = cuttingVal;
+        }
+
+        /** Add point to leaf node.
+         * This should only be used if node is a leaf. Calling this on a
+         * non-leaf node will result in undefined behaviour. */
+        bool addPoint(const PointType& p);
+
+        /** Remove point from leaf node.
+         * This should only be used if node is a leaf. Calling this on a
+         * non-leaf node will result in undefined behaviour. */
+        bool removePoint(const PointType& p);
+
+    private:
+        /** Split leaf node into two children and insert given point into
+         * one of those children.
+         * This should only be used if node is a leaf. Calling this on a
+         * non-leaf node will result in undefined behaviour. */
+        void splitAndInsert(const PointType& p);
+        /** TODO
+         * This should only be used if node is a leaf. Calling this on a
+         * non-leaf node will result in undefined behaviour. */
+        void mergeChildren();
+
+        /** Set to true if node is a leaf. */
+        bool m_isLeaf;
+        /** Contains all points stored in node.
+         * Only used if node is a leaf. */
+        PointList m_points;
+
+        /** Pointer to left child of node.
+         * NULL if node has no left child. */
+        BucketKDTreeNode<D, ELEM_TYPE>* m_leftChild;
+        /** Pointer to right child of node.
+         * NULL if node has no right child. */
+        BucketKDTreeNode<D, ELEM_TYPE>* m_rightChild;
+
+        /** Dimension this node uses to partition space.
+         * Only used if node is not a leaf. */
+        int m_cuttingDimension;
+        /** Value in cutting dimension at which the space is partitioned.
+         * Only used if node is not a leaf. */
+        ELEM_TYPE m_cuttingValue;
+
+    };
+
+    template<int D, typename ELEM_TYPE>
+    BucketKDTreeNode<D, ELEM_TYPE>::BucketKDTreeNode()
+    : m_isLeaf(true), m_leftChild(NULL), m_rightChild(NULL),
+      m_cuttingDimension(0), m_cuttingValue(0)
+    {
+    }
+
+    template<int D, typename ELEM_TYPE>
+    BucketKDTreeNode<D, ELEM_TYPE>::BucketKDTreeNode(
+        const Point<D, ELEM_TYPE>& p)
+    : m_isLeaf(true), m_leftChild(NULL), m_rightChild(NULL),
+      m_cuttingDimension(0), m_cuttingValue(0)
+    {
+        m_points.push_back(p);
+    }
+
+    template<int D, typename ELEM_TYPE>
+    BucketKDTreeNode<D, ELEM_TYPE>::BucketKDTreeNode(
+        const PointList& points)
+    : m_isLeaf(true), m_points(points), m_leftChild(NULL), m_rightChild(NULL),
+      m_cuttingDimension(0), m_cuttingValue(0)
+    {
+
+    }
+
+    template<int D, typename ELEM_TYPE>
+    BucketKDTreeNode<D, ELEM_TYPE>::~BucketKDTreeNode()
+    {
+        delete m_leftChild;
+        delete m_rightChild;
+    }
+
+    template<int D, typename ELEM_TYPE>
+    inline
+    bool BucketKDTreeNode<D, ELEM_TYPE>::contains(
+        const typename BucketKDTreeNode<D, ELEM_TYPE>::PointType& p)
+    {
+        typename PointList::const_iterator result = std::find(
+            m_points.begin(), m_points.end(), p);
+        return (result != m_points.end());
+    }
+
+    template<int D, typename ELEM_TYPE>
+    inline
+    bool BucketKDTreeNode<D, ELEM_TYPE>::addPoint(
+        const typename BucketKDTreeNode<D, ELEM_TYPE>::PointType& p)
+    {
+        if (contains(p)) // if point already in structure, don't add!
+        {
+            return false;
+        }
+        else
+        {
+            if (m_points.size() >= MAX_POINTS_PER_BUCKET)
+            {
+                splitAndInsert(p);
+            }
+            else
+            {
+                m_points.push_back(p);
+            }
+
+            return true;
+        }
+    }
+
+    template<int D, typename ELEM_TYPE>
+    inline
+    bool BucketKDTreeNode<D, ELEM_TYPE>::removePoint(
+        const typename BucketKDTreeNode<D, ELEM_TYPE>::PointType& p)
+    {
+        if (contains(p))
+        {
+            m_points.erase(
+                std::remove(m_points.begin(), m_points.end(), p)
+            );
+            // If the leaf is now 1/3 or less full, try merging it with its
+            // sibling
+            if (m_points.size() <= (MAX_POINTS_PER_BUCKET / 3))
+            {
+                mergeChildren();
+            }
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+namespace
+{
+
+    template<int D, typename ELEM_TYPE>
+    inline
+    ELEM_TYPE rangeOfDimension(int d,
+        const std::vector< Point<D, ELEM_TYPE> >& points)
+    {
+        if (points.empty())
+        {
+            return 0;
+        }
+        else
+        {
+            ELEM_TYPE min = points[0][d];
+            ELEM_TYPE max = min;
+            for (typename std::vector< Point<D, ELEM_TYPE> >::const_iterator
+                iter = points.begin(); iter != points.end(); ++iter)
+            {
+                ELEM_TYPE val = (*iter)[d];
+                if (val < min)
+                {
+                    min = val;
+                }
+                else if (val > max)
+                {
+                    max = val;
+                }
+            }
+
+            return (max - min);
+        }
+    }
+
+    template<int D, typename ELEM_TYPE>
+    inline
+    int dimensionWithHighestRange(
+        const std::vector< Point<D, ELEM_TYPE> >& points)
+    {
+        int chosenDim = 0;
+        ELEM_TYPE maxRange = rangeOfDimension(0, points);
+
+        for (int d = 1; d < D; ++d)
+        {
+            ELEM_TYPE range = rangeOfDimension(d, points);
+            if (range > maxRange)
+            {
+                chosenDim = d;
+                maxRange = range;
+            }
+        }
+
+        return chosenDim;
+    }
+
+    template<int D, typename ELEM_TYPE>
+    inline
+    ELEM_TYPE averageOfDimension(int d,
+        const std::vector< Point<D, ELEM_TYPE> >& points)
+    {
+        ELEM_TYPE sum = 0;
+        for (typename std::vector< Point<D, ELEM_TYPE> >::const_iterator iter
+            = points.begin(); iter != points.end(); ++iter)
+        {
+            sum += (*iter)[d];
+        }
+        return sum / points.size();
+    }
+
+}
+
+    template<int D, typename ELEM_TYPE>
+    void BucketKDTreeNode<D, ELEM_TYPE>::splitAndInsert(
+        const typename BucketKDTreeNode<D, ELEM_TYPE>::PointType& p)
+    {
+        // CUTTING DIMENSION: Use dimension with highest range of values
+        // CUTTING VALUE: Use average value of dth coordinate of node's points
+        int cuttingDimension = dimensionWithHighestRange(m_points);
+        ELEM_TYPE cuttingValue = averageOfDimension(
+            cuttingDimension, m_points);
+
+        // Partition points using cutting plane
+        SplitPredicate<D, ELEM_TYPE> predicate(cuttingDimension, cuttingValue);
+        typename PointList::iterator endOfLeft = std::partition(
+            m_points.begin(), m_points.end(), predicate);
+
+        // Construct children to hold both partitions
+        m_leftChild = new BucketKDTreeNode<D, ELEM_TYPE>(
+            PointList(m_points.begin(), endOfLeft)
+        );
+        m_rightChild = new BucketKDTreeNode<D, ELEM_TYPE>(
+            PointList(endOfLeft, m_points.end())
+        );
+
+        // Make given node a non-leaf
+        m_isLeaf = false;
+        m_points.clear();
+        m_cuttingDimension = cuttingDimension;
+        m_cuttingValue = cuttingValue;
+
+        // Insert given point into one of the new children
+        if (p[m_cuttingDimension] < m_cuttingValue)
+        {
+            m_leftChild->addPoint(p);
+        }
+        else
+        {
+            m_rightChild->addPoint(p);
+        }
+    }
+
+    template<int D, typename ELEM_TYPE>
+    void BucketKDTreeNode<D, ELEM_TYPE>::mergeChildren()
+    {
+        // TODO: implement
+    }
+
+    /** Implements bucket kd-tree index structure. Unlike the point kd-tree,
+     * each node of the structure stores several points. When the capacity of
+     * a node is filled, it is split into two children nodes.
+     *
+     * Nodes are only stored in the leaves of the tree in this structure.
+    */
     template<int D, typename ELEM_TYPE>
     class BucketKDTree
     {
@@ -66,81 +408,78 @@ namespace mdsearch
         bool query(const Point<D, ELEM_TYPE>& point);
 
     private:
-        typedef std::vector< Point<D, ELEM_TYPE> > PointList;
+        typedef BucketKDTreeNode<D, ELEM_TYPE> NodeType;
 
-        /* Represents single node in bucket kd-tree. */
-        struct Node
-        {
-            /** Set to true if node is a leaf. */
-            bool isLeaf;
-            /** Contains all points stored in node.
-             * Only used if node is a leaf. */
-            PointList points;
-            /** Pointer to left child of node.
-             * NULL if node has no left child. */
-            Node* leftChild;
-            /** Pointer to right child of node.
-             * NULL if node has no right child. */
-            Node* rightChild;
+        /** Find lead node that corresponds to spatial region that contains
+         * given point. */
+        NodeType* findLeafFor(const Point<D, ELEM_TYPE>& p);
 
-            /** Construct leaf node that stores given points */
-            Node(const PointList& points)
-            : points(points), leftChild(NULL), rightChild(NULL)
-            {
-
-            }
-
-            /** Delete node and both of its children. */
-            ~Node()
-            {
-                delete leftChild;
-                delete rightChild;
-            }
-        };
-
-    private:
         /** Root node of tree. */
-        Node* root;
+        NodeType* m_root;
 
     };
 
     template<int D, typename ELEM_TYPE>
-    BucketKDTree<D, ELEM_TYPE>::BucketKDTree() : root(NULL)
+    BucketKDTree<D, ELEM_TYPE>::BucketKDTree()
+    : m_root(new NodeType())
     {
     }
 
     template<int D, typename ELEM_TYPE>
     BucketKDTree<D, ELEM_TYPE>::~BucketKDTree()
     {
-        delete root;
+        delete m_root;
     }
 
     template<int D, typename ELEM_TYPE>
     void BucketKDTree<D, ELEM_TYPE>::clear()
     {
-        delete root;
-        root = NULL;
+        delete m_root;
+        m_root = new NodeType();
     }
 
     template<int D, typename ELEM_TYPE>
     bool BucketKDTree<D, ELEM_TYPE>::insert(const Point<D, ELEM_TYPE>& p)
     {
-        // TODO
-        return false;
+        NodeType* leaf = findLeafFor(p);
+        return (leaf && leaf->addPoint(p));
     }
 
     template<int D, typename ELEM_TYPE>
     bool BucketKDTree<D, ELEM_TYPE>::query(const Point<D, ELEM_TYPE>& p)
     {
-        // TODO
-        return false;
+        NodeType* leaf = findLeafFor(p);
+        return (leaf && leaf->contains(p));
     }
 
     template<int D, typename ELEM_TYPE>
     bool BucketKDTree<D, ELEM_TYPE>::remove(const Point<D, ELEM_TYPE>& p)
     {
-        // TODO
-        return false;
+        NodeType* leaf = findLeafFor(p);
+        return (leaf && leaf->removePoint(p));
+    }
+
+    template<int D, typename ELEM_TYPE>
+    typename BucketKDTree<D, ELEM_TYPE>::NodeType*
+    BucketKDTree<D, ELEM_TYPE>::findLeafFor(const Point<D, ELEM_TYPE>& p)
+    {
+        NodeType* current = m_root;
+        while (!current->isLeaf())
+        {
+            // Ensure non-leaf node has two children (should always be case)
+            assert(current->leftChild() && current->rightChild());
+
+            if (p[current->cuttingDimension()] < current->cuttingValue())
+            {
+                current = current->leftChild();
+            }
+            else
+            {
+                current = current->rightChild();
+            }
+        }
+
+        return current;
     }
 
 }
