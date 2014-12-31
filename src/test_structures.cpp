@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include "multigrid.hpp"
 #include "bithash.hpp"
 #include "pyramidtree.hpp"
+#include "bucket_kdtree.hpp"
 #include <iostream>
 
 using namespace mdsearch;
@@ -225,6 +226,9 @@ namespace
         KDTree<NUM_DIMENSIONS, Real> kdTree;
         testStructure< KDTree<NUM_DIMENSIONS, Real> >(
             "kd-tree", &kdTree, points);
+        BucketKDTree<NUM_DIMENSIONS, Real> bucketKDTree;
+        testStructure< BucketKDTree<NUM_DIMENSIONS, Real> >(
+            "bucket_kd-tree", &bucketKDTree, points);
         Multigrid<NUM_DIMENSIONS, Real> multigrid(boundary);
         testStructure< Multigrid<NUM_DIMENSIONS, Real> >(
             "multigrid", &multigrid, points);
@@ -243,6 +247,9 @@ namespace
         KDTree<NUM_DIMENSIONS, Real> kdTree;
         timeStructure< KDTree<NUM_DIMENSIONS, Real> >(
             "kd-tree", &kdTree, points);
+        BucketKDTree<NUM_DIMENSIONS, Real> bucketKDTree;
+        testStructure< BucketKDTree<NUM_DIMENSIONS, Real> >(
+            "bucket_kd-tree", &bucketKDTree, points);
         Multigrid<NUM_DIMENSIONS, Real> multigrid(boundary);
         timeStructure< Multigrid<NUM_DIMENSIONS, Real> >(
             "multigrid", &multigrid, points);
