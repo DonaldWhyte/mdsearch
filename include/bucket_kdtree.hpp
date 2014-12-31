@@ -51,38 +51,6 @@ namespace mdsearch
     /** Maximum number of points allowed in a bucket. */
     static const size_t MAX_POINTS_PER_BUCKET = 8;
 
-    /** Splits points using a single dimension (D - 1 hyperplane). */
-    template<int D, typename ELEM_TYPE>
-    class SplitPredicate
-    {
-
-    public:
-        SplitPredicate(int cuttingDimension, ELEM_TYPE cuttingValue);
-
-        /** Return true if point lies on the lower end of the cutting plane. */
-        bool operator()(const Point<D, ELEM_TYPE>& p);
-
-    private:
-        /** Dimension to use when partitioning points. */
-        int m_cuttingDimension;
-        /** Value in cutting dimension at which points are partitioned. */
-        ELEM_TYPE m_cuttingValue;
-
-    };
-
-    template<int D, typename ELEM_TYPE>
-    SplitPredicate<D, ELEM_TYPE>::SplitPredicate(int cuttingDimension,
-                                                 ELEM_TYPE cuttingValue)
-    : m_cuttingDimension(cuttingDimension), m_cuttingValue(cuttingValue)
-    {
-    }
-
-    template<int D, typename ELEM_TYPE>
-    bool SplitPredicate<D, ELEM_TYPE>::operator()(const Point<D, ELEM_TYPE>& p)
-    {
-        return (p[m_cuttingDimension] < m_cuttingValue);
-    }
-
     /* Represents single node in bucket kd-tree. */
     template<int D, typename ELEM_TYPE>
     class BucketKDTreeNode
@@ -139,6 +107,24 @@ namespace mdsearch
         bool removePoint(const PointType& p);
 
     private:
+        /** Splits points using a single dimension (D - 1 hyperplane). */
+        class SplitPredicate
+        {
+
+        public:
+            SplitPredicate(int cuttingDimension, ELEM_TYPE cuttingValue);
+
+            /** Return true if point lies on the lower end of the cutting plane. */
+            bool operator()(const Point<D, ELEM_TYPE>& p);
+
+        private:
+            /** Dimension to use when partitioning points. */
+            int m_cuttingDimension;
+            /** Value in cutting dimension at which points are partitioned. */
+            ELEM_TYPE m_cuttingValue;
+
+        };
+
         /** Split leaf node into two children and insert given point into
          * one of those children.
          * This should only be used if node is a leaf. Calling this on a
@@ -343,7 +329,7 @@ namespace
             cuttingDimension, m_points);
 
         // Partition points using cutting plane
-        SplitPredicate<D, ELEM_TYPE> predicate(cuttingDimension, cuttingValue);
+        SplitPredicate predicate(cuttingDimension, cuttingValue);
         typename PointList::iterator endOfLeft = std::partition(
             m_points.begin(), m_points.end(), predicate);
 
@@ -376,6 +362,20 @@ namespace
     void BucketKDTreeNode<D, ELEM_TYPE>::mergeChildren()
     {
         // TODO: implement
+    }
+
+    template<int D, typename ELEM_TYPE>
+    BucketKDTreeNode<D, ELEM_TYPE>::SplitPredicate::SplitPredicate(
+        int cuttingDimension, ELEM_TYPE cuttingValue)
+    : m_cuttingDimension(cuttingDimension), m_cuttingValue(cuttingValue)
+    {
+    }
+
+    template<int D, typename ELEM_TYPE>
+    bool BucketKDTreeNode<D, ELEM_TYPE>::SplitPredicate::operator()(
+        const Point<D, ELEM_TYPE>& p)
+    {
+        return (p[m_cuttingDimension] < m_cuttingValue);
     }
 
     /** Implements bucket kd-tree index structure. Unlike the point kd-tree,
