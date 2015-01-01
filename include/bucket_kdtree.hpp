@@ -113,6 +113,15 @@ namespace mdsearch
             m_cuttingValue = cuttingVal;
         }
 
+        /** Increment total point count on this node.
+         * Recursively propagates increment by calling this method on parent
+         * nodes. */
+        void incrementTotalPoints();
+        /** Decrement total point count on this node.
+         * Recursively propagates decrement by calling this method on parent
+         * nodes. */
+        void decrementTotalPoints();
+
         /** Add point to leaf node.
          * This should only be used if node is a leaf. Calling this on a
          * non-leaf node will result in undefined behaviour. */
@@ -192,7 +201,7 @@ namespace mdsearch
     BucketKDTreeNode<D, ELEM_TYPE>::BucketKDTreeNode(
         BucketKDTreeNode<D, ELEM_TYPE>* parent,
         const Point<D, ELEM_TYPE>& p)
-    : m_parent(parent), m_totalPoints(0), m_isLeaf(true),
+    : m_parent(parent), m_totalPoints(1), m_isLeaf(true),
       m_leftChild(NULL), m_rightChild(NULL),
       m_cuttingDimension(0), m_cuttingValue(0)
     {
@@ -203,7 +212,8 @@ namespace mdsearch
     BucketKDTreeNode<D, ELEM_TYPE>::BucketKDTreeNode(
         BucketKDTreeNode<D, ELEM_TYPE>* parent,
         const PointList& points)
-    : m_parent(parent), m_totalPoints(0), m_isLeaf(true), m_points(points),
+    : m_parent(parent), m_totalPoints(points.size()),
+      m_isLeaf(true), m_points(points),
       m_leftChild(NULL), m_rightChild(NULL),
       m_cuttingDimension(0), m_cuttingValue(0)
     {
@@ -215,6 +225,28 @@ namespace mdsearch
     {
         delete m_leftChild;
         delete m_rightChild;
+    }
+
+    template<int D, typename ELEM_TYPE>
+    inline
+    void BucketKDTreeNode<D, ELEM_TYPE>::incrementTotalPoints()
+    {
+        m_totalPoints++;
+        if (m_parent)
+        {
+            m_parent->incrementTotalPoints();
+        }
+    }
+
+    template<int D, typename ELEM_TYPE>
+    inline
+    void BucketKDTreeNode<D, ELEM_TYPE>::decrementTotalPoints()
+    {
+        m_totalPoints--;
+        if (m_parent)
+        {
+            m_parent->decrementTotalPoints();
+        }
     }
 
     template<int D, typename ELEM_TYPE>
@@ -245,6 +277,7 @@ namespace mdsearch
             else
             {
                 m_points.push_back(p);
+                incrementTotalPoints();
             }
 
             return true;
@@ -261,6 +294,8 @@ namespace mdsearch
             m_points.erase(
                 std::remove(m_points.begin(), m_points.end(), p)
             );
+            decrementTotalPoints();
+
             // TODO
             if (m_parent)
             {
@@ -442,6 +477,9 @@ namespace
         /** Return true if the given point is being stored in the structure. */
         bool query(const Point<D, ELEM_TYPE>& point);
 
+        /** Return total number of points stored in structure. */
+        int totalPoints() const;
+
     private:
         typedef BucketKDTreeNode<D, ELEM_TYPE> NodeType;
 
@@ -492,6 +530,13 @@ namespace
     {
         NodeType* leaf = findLeafFor(p);
         return (leaf && leaf->removePoint(p));
+    }
+
+    template<int D, typename ELEM_TYPE>
+    inline
+    int BucketKDTree<D, ELEM_TYPE>::totalPoints() const
+    {
+        return m_root->totalPoints();
     }
 
     template<int D, typename ELEM_TYPE>
