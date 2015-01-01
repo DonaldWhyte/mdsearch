@@ -50,6 +50,9 @@ namespace mdsearch
 
     /** Maximum number of points allowed in a bucket. */
     static const size_t MAX_POINTS_PER_BUCKET = 8;
+    /** Minimum number of points before removing another point will force
+     * the node is merge its children. */
+    static const size_t MIN_POINTS_BEFORE_MERGE = MAX_POINTS_PER_BUCKET / 3;
 
     /* Represents single node in bucket kd-tree. */
     template<int D, typename ELEM_TYPE>
@@ -61,11 +64,13 @@ namespace mdsearch
         typedef std::vector<PointType> PointList;
 
         /** Construct leaf node with no points. */
-        BucketKDTreeNode();
+        BucketKDTreeNode(BucketKDTreeNode<D, ELEM_TYPE>* parent);
         /** Construct leaf node that stores given point. */
-        BucketKDTreeNode(const PointType& p);
+        BucketKDTreeNode(BucketKDTreeNode<D, ELEM_TYPE>* parent,
+                         const PointType& p);
         /** Construct leaf node that stores given points. */
-        BucketKDTreeNode(const PointList& points);
+        BucketKDTreeNode(BucketKDTreeNode<D, ELEM_TYPE>* parent,
+                         const PointList& points);
 
         /** Delete node and both of its children. */
         ~BucketKDTreeNode();
@@ -73,6 +78,12 @@ namespace mdsearch
         /** Return true if node contains given point. */
         bool contains(const PointType& p);
 
+        // ACCESSORS
+        inline BucketKDTreeNode<D, ELEM_TYPE>* parent()
+        {
+            return m_parent;
+        }
+        inline int totalPoints() const { return m_totalPoints; }
         inline bool isLeaf() const { return m_isLeaf; }
         inline const PointList& points() const { return m_points; }
         inline BucketKDTreeNode<D, ELEM_TYPE>* leftChild()
@@ -86,11 +97,17 @@ namespace mdsearch
         inline int cuttingDimension() const { return m_cuttingDimension; }
         inline ELEM_TYPE cuttingValue() const { return m_cuttingValue; }
 
-        inline void setIsLeaf(bool leaf) { m_isLeaf = leaf; }
+        // MUTATORS
+        inline void setIsLeaf(bool leaf)
+        {
+            m_isLeaf = leaf;
+        }
+
         inline void setCuttingDimension(bool cuttingDim)
         {
             m_cuttingDimension = cuttingDim;
         }
+
         inline void setCuttingValue(bool cuttingVal)
         {
             m_cuttingValue = cuttingVal;
@@ -131,9 +148,15 @@ namespace mdsearch
          * non-leaf node will result in undefined behaviour. */
         void splitAndInsert(const PointType& p);
         /** TODO
-         * This should only be used if node is a leaf. Calling this on a
-         * non-leaf node will result in undefined behaviour. */
-        void mergeChildren();
+         * This should only be used if node is NoT a leaf. Calling this on a
+         * leaf node will result in undefined behaviour. */
+        void attemptMerge();
+
+        /** Pointer to parent node.
+         * Set to NULL if node is the root. */
+        BucketKDTreeNode<D, ELEM_TYPE>* m_parent;
+        /** Total number of points store in subtree rooted at this node. */
+        int m_totalPoints;
 
         /** Set to true if node is a leaf. */
         bool m_isLeaf;
@@ -147,7 +170,6 @@ namespace mdsearch
         /** Pointer to right child of node.
          * NULL if node has no right child. */
         BucketKDTreeNode<D, ELEM_TYPE>* m_rightChild;
-
         /** Dimension this node uses to partition space.
          * Only used if node is not a leaf. */
         int m_cuttingDimension;
@@ -158,16 +180,20 @@ namespace mdsearch
     };
 
     template<int D, typename ELEM_TYPE>
-    BucketKDTreeNode<D, ELEM_TYPE>::BucketKDTreeNode()
-    : m_isLeaf(true), m_leftChild(NULL), m_rightChild(NULL),
+    BucketKDTreeNode<D, ELEM_TYPE>::BucketKDTreeNode(
+        BucketKDTreeNode<D, ELEM_TYPE>* parent)
+    : m_parent(parent), m_totalPoints(0), m_isLeaf(true),
+      m_leftChild(NULL), m_rightChild(NULL),
       m_cuttingDimension(0), m_cuttingValue(0)
     {
     }
 
     template<int D, typename ELEM_TYPE>
     BucketKDTreeNode<D, ELEM_TYPE>::BucketKDTreeNode(
+        BucketKDTreeNode<D, ELEM_TYPE>* parent,
         const Point<D, ELEM_TYPE>& p)
-    : m_isLeaf(true), m_leftChild(NULL), m_rightChild(NULL),
+    : m_parent(parent), m_totalPoints(0), m_isLeaf(true),
+      m_leftChild(NULL), m_rightChild(NULL),
       m_cuttingDimension(0), m_cuttingValue(0)
     {
         m_points.push_back(p);
@@ -175,8 +201,10 @@ namespace mdsearch
 
     template<int D, typename ELEM_TYPE>
     BucketKDTreeNode<D, ELEM_TYPE>::BucketKDTreeNode(
+        BucketKDTreeNode<D, ELEM_TYPE>* parent,
         const PointList& points)
-    : m_isLeaf(true), m_points(points), m_leftChild(NULL), m_rightChild(NULL),
+    : m_parent(parent), m_totalPoints(0), m_isLeaf(true), m_points(points),
+      m_leftChild(NULL), m_rightChild(NULL),
       m_cuttingDimension(0), m_cuttingValue(0)
     {
 
@@ -233,12 +261,12 @@ namespace mdsearch
             m_points.erase(
                 std::remove(m_points.begin(), m_points.end(), p)
             );
-            // If the leaf is now 1/3 or less full, try merging it with its
-            // sibling
-            if (m_points.size() <= (MAX_POINTS_PER_BUCKET / 3))
+            // TODO
+            if (m_parent)
             {
-                mergeChildren();
+                m_parent->attemptMerge();
             }
+
             return true;
         }
         else
@@ -335,10 +363,10 @@ namespace
 
         // Construct children to hold both partitions
         m_leftChild = new BucketKDTreeNode<D, ELEM_TYPE>(
-            PointList(m_points.begin(), endOfLeft)
+            this, PointList(m_points.begin(), endOfLeft)
         );
         m_rightChild = new BucketKDTreeNode<D, ELEM_TYPE>(
-            PointList(endOfLeft, m_points.end())
+            this, PointList(endOfLeft, m_points.end())
         );
 
         // Make given node a non-leaf
@@ -359,9 +387,16 @@ namespace
     }
 
     template<int D, typename ELEM_TYPE>
-    void BucketKDTreeNode<D, ELEM_TYPE>::mergeChildren()
+    inline
+    void BucketKDTreeNode<D, ELEM_TYPE>::attemptMerge()
     {
-        // TODO: implement
+        // If children of this node contain less than a certain number
+        // of points, merge the two children together and make this node
+        // a non-leaf
+        if (m_totalPoints <= MIN_POINTS_BEFORE_MERGE)
+        {
+            // TODO
+        }
     }
 
     template<int D, typename ELEM_TYPE>
@@ -421,7 +456,7 @@ namespace
 
     template<int D, typename ELEM_TYPE>
     BucketKDTree<D, ELEM_TYPE>::BucketKDTree()
-    : m_root(new NodeType())
+    : m_root(new NodeType(NULL))
     {
     }
 
@@ -435,7 +470,7 @@ namespace
     void BucketKDTree<D, ELEM_TYPE>::clear()
     {
         delete m_root;
-        m_root = new NodeType();
+        m_root = new NodeType(NULL);
     }
 
     template<int D, typename ELEM_TYPE>
