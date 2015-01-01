@@ -24,8 +24,8 @@ find_package (Boost 1.41.0 COMPONENTS program_options REQUIRED)
 include_directories (${Boost_INCLUDE_DIRS})
 set (BOOST_LIBRARYDIR ${BOOST_ROOT}/stage/lib/)
 
-# Set compiler flags
-set ( EXTRA_CXX_COMPILER_FLAGS "-O3" )
+# Set build type to "Release" to enable full compiler optimisation
+set(CMAKE_BUILD_TYPE Release)
 
 #------------------------------------------------------------------------------
 
