@@ -42,83 +42,12 @@ THE SOFTWARE.
 #define MDSEARCH_BUCKET_KDTREE_H
 
 #include "point.hpp"
+#include "bucket_kdtree_strategies.hpp"
 #include <algorithm>
 #include <cassert>
 
 namespace mdsearch
 {
-
-namespace
-    {
-
-        template<int D, typename ELEM_TYPE>
-        inline
-        ELEM_TYPE rangeOfDimension(int d,
-            const std::vector< Point<D, ELEM_TYPE> >& points)
-        {
-            if (points.empty())
-            {
-                return 0;
-            }
-            else
-            {
-                ELEM_TYPE min = points[0][d];
-                ELEM_TYPE max = min;
-                for (typename std::vector< Point<D, ELEM_TYPE> >::const_iterator
-                    iter = points.begin(); iter != points.end(); ++iter)
-                {
-                    ELEM_TYPE val = (*iter)[d];
-                    if (val < min)
-                    {
-                        min = val;
-                    }
-                    else if (val > max)
-                    {
-                        max = val;
-                    }
-                }
-
-                return (max - min);
-            }
-        }
-
-        template<int D, typename ELEM_TYPE>
-        inline
-        int dimensionWithHighestRange(
-            const std::vector< Point<D, ELEM_TYPE> >& points)
-        {
-            int chosenDim = 0;
-            ELEM_TYPE maxRange = rangeOfDimension(0, points);
-
-            for (int d = 1; d < D; ++d)
-            {
-                ELEM_TYPE range = rangeOfDimension(d, points);
-                if (range > maxRange)
-                {
-                    chosenDim = d;
-                    maxRange = range;
-                }
-            }
-
-            return chosenDim;
-        }
-
-        template<int D, typename ELEM_TYPE>
-        inline
-        ELEM_TYPE averageOfDimension(int d,
-            const std::vector< Point<D, ELEM_TYPE> >& points)
-        {
-            ELEM_TYPE sum = 0;
-            for (typename std::vector< Point<D, ELEM_TYPE> >::const_iterator iter
-                = points.begin(); iter != points.end(); ++iter)
-            {
-                sum += (*iter)[d];
-            }
-            return sum / points.size();
-        }
-
-    }
-
 
     /** Maximum number of points allowed in a bucket. */
     static const size_t MAX_POINTS_PER_BUCKET = 8;
@@ -389,14 +318,13 @@ namespace
     void BucketKDTreeNode<D, ELEM_TYPE>::splitAndInsert(
         const typename BucketKDTreeNode<D, ELEM_TYPE>::PointType& p)
     {
-        // CUTTING DIMENSION: Use dimension with highest range of values
-        // CUTTING VALUE: Use average value of dth coordinate of node's points
-        int cuttingDimension = dimensionWithHighestRange(m_points);
-        ELEM_TYPE cuttingValue = averageOfDimension(
-            cuttingDimension, m_points);
+        m_cuttingDimension = CuttingDimensionStrategies<D, ELEM_TYPE>
+            ::dimensionWithHighestRange(m_points);
+        m_cuttingValue = CuttingValueStrategies<D, ELEM_TYPE>
+            ::averageOfDimension(m_cuttingDimension, m_points);
 
         // Partition points using cutting plane
-        SplitPredicate predicate(cuttingDimension, cuttingValue);
+        SplitPredicate predicate(m_cuttingDimension, m_cuttingValue);
         typename PointList::iterator endOfLeft = std::partition(
             m_points.begin(), m_points.end(), predicate);
 
@@ -408,11 +336,9 @@ namespace
             this, PointList(endOfLeft, m_points.end())
         );
 
-        // Make given node a non-leaf
+        // Turn node into a non-leaf
         m_isLeaf = false;
         m_points.clear();
-        m_cuttingDimension = cuttingDimension;
-        m_cuttingValue = cuttingValue;
 
         // Insert given point into one of the new children
         if (p[m_cuttingDimension] < m_cuttingValue)
