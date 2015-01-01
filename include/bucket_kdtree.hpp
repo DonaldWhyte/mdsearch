@@ -48,11 +48,83 @@ THE SOFTWARE.
 namespace mdsearch
 {
 
+namespace
+    {
+
+        template<int D, typename ELEM_TYPE>
+        inline
+        ELEM_TYPE rangeOfDimension(int d,
+            const std::vector< Point<D, ELEM_TYPE> >& points)
+        {
+            if (points.empty())
+            {
+                return 0;
+            }
+            else
+            {
+                ELEM_TYPE min = points[0][d];
+                ELEM_TYPE max = min;
+                for (typename std::vector< Point<D, ELEM_TYPE> >::const_iterator
+                    iter = points.begin(); iter != points.end(); ++iter)
+                {
+                    ELEM_TYPE val = (*iter)[d];
+                    if (val < min)
+                    {
+                        min = val;
+                    }
+                    else if (val > max)
+                    {
+                        max = val;
+                    }
+                }
+
+                return (max - min);
+            }
+        }
+
+        template<int D, typename ELEM_TYPE>
+        inline
+        int dimensionWithHighestRange(
+            const std::vector< Point<D, ELEM_TYPE> >& points)
+        {
+            int chosenDim = 0;
+            ELEM_TYPE maxRange = rangeOfDimension(0, points);
+
+            for (int d = 1; d < D; ++d)
+            {
+                ELEM_TYPE range = rangeOfDimension(d, points);
+                if (range > maxRange)
+                {
+                    chosenDim = d;
+                    maxRange = range;
+                }
+            }
+
+            return chosenDim;
+        }
+
+        template<int D, typename ELEM_TYPE>
+        inline
+        ELEM_TYPE averageOfDimension(int d,
+            const std::vector< Point<D, ELEM_TYPE> >& points)
+        {
+            ELEM_TYPE sum = 0;
+            for (typename std::vector< Point<D, ELEM_TYPE> >::const_iterator iter
+                = points.begin(); iter != points.end(); ++iter)
+            {
+                sum += (*iter)[d];
+            }
+            return sum / points.size();
+        }
+
+    }
+
+
     /** Maximum number of points allowed in a bucket. */
     static const size_t MAX_POINTS_PER_BUCKET = 8;
     /** Minimum number of points before removing another point will force
      * the node is merge its children. */
-    static const size_t MIN_POINTS_BEFORE_MERGE = MAX_POINTS_PER_BUCKET / 3;
+    static const size_t MIN_POINTS_BEFORE_MERGE = MAX_POINTS_PER_BUCKET / 2;
 
     /* Represents single node in bucket kd-tree. */
     template<int D, typename ELEM_TYPE>
@@ -156,8 +228,10 @@ namespace mdsearch
          * This should only be used if node is a leaf. Calling this on a
          * non-leaf node will result in undefined behaviour. */
         void splitAndInsert(const PointType& p);
-        /** TODO
-         * This should only be used if node is NoT a leaf. Calling this on a
+        /** If node contains less than a certain number of points, such that
+         * the two children MUST be leaves, then merge both children into
+         * this node, making this node a leaf.
+         * This should only be used if node is NOT A LEAF. Calling this on a
          * leaf node will result in undefined behaviour. */
         void attemptMerge();
 
@@ -296,7 +370,8 @@ namespace mdsearch
             );
             decrementTotalPoints();
 
-            // TODO
+            // Now that point has been removed, it may be worth merging
+            // siblings into single node
             if (m_parent)
             {
                 m_parent->attemptMerge();
@@ -309,77 +384,6 @@ namespace mdsearch
             return false;
         }
     }
-
-namespace
-{
-
-    template<int D, typename ELEM_TYPE>
-    inline
-    ELEM_TYPE rangeOfDimension(int d,
-        const std::vector< Point<D, ELEM_TYPE> >& points)
-    {
-        if (points.empty())
-        {
-            return 0;
-        }
-        else
-        {
-            ELEM_TYPE min = points[0][d];
-            ELEM_TYPE max = min;
-            for (typename std::vector< Point<D, ELEM_TYPE> >::const_iterator
-                iter = points.begin(); iter != points.end(); ++iter)
-            {
-                ELEM_TYPE val = (*iter)[d];
-                if (val < min)
-                {
-                    min = val;
-                }
-                else if (val > max)
-                {
-                    max = val;
-                }
-            }
-
-            return (max - min);
-        }
-    }
-
-    template<int D, typename ELEM_TYPE>
-    inline
-    int dimensionWithHighestRange(
-        const std::vector< Point<D, ELEM_TYPE> >& points)
-    {
-        int chosenDim = 0;
-        ELEM_TYPE maxRange = rangeOfDimension(0, points);
-
-        for (int d = 1; d < D; ++d)
-        {
-            ELEM_TYPE range = rangeOfDimension(d, points);
-            if (range > maxRange)
-            {
-                chosenDim = d;
-                maxRange = range;
-            }
-        }
-
-        return chosenDim;
-    }
-
-    template<int D, typename ELEM_TYPE>
-    inline
-    ELEM_TYPE averageOfDimension(int d,
-        const std::vector< Point<D, ELEM_TYPE> >& points)
-    {
-        ELEM_TYPE sum = 0;
-        for (typename std::vector< Point<D, ELEM_TYPE> >::const_iterator iter
-            = points.begin(); iter != points.end(); ++iter)
-        {
-            sum += (*iter)[d];
-        }
-        return sum / points.size();
-    }
-
-}
 
     template<int D, typename ELEM_TYPE>
     void BucketKDTreeNode<D, ELEM_TYPE>::splitAndInsert(
@@ -427,10 +431,26 @@ namespace
     {
         // If children of this node contain less than a certain number
         // of points, merge the two children together and make this node
-        // a non-leaf
-        if (m_totalPoints <= MIN_POINTS_BEFORE_MERGE)
+        // a leaf
+        if (m_totalPoints < MIN_POINTS_BEFORE_MERGE)
         {
-            // TODO
+            m_points = m_leftChild->points();
+
+            m_points.insert(m_points.end(),
+                m_rightChild->points().begin(),
+                m_rightChild->points().end());
+
+
+            m_isLeaf = true;
+            delete m_leftChild;
+            delete m_rightChild;
+            m_leftChild = NULL;
+            m_rightChild = NULL;
+
+            if (m_parent)
+            {
+                m_parent->attemptMerge();
+            }
         }
     }
 
