@@ -43,6 +43,9 @@ THE SOFTWARE.
 
 ******************************************************************************/
 
+#ifndef MDSEARCH_MULTIGRID_H
+#define MDSEARCH_MULTIGRID_H
+
 #include "point.hpp"
 #include "boundary.hpp"
 #include <stack>
@@ -473,3 +476,5 @@ namespace mdsearch
     }
 
 }
+
+#endif
