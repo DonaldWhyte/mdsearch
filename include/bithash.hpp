@@ -43,8 +43,8 @@ THE SOFTWARE.
 
 ******************************************************************************/
 
-#ifndef MDSEARCH_HASHTABLE_H
-#define MDSEARCH_HASHTABLE_H
+#ifndef MDSEARCH_BITHASH_H
+#define MDSEARCH_BITHASH_H
 
 #include "hashstruct.hpp"
 #include <boost/functional/hash.hpp>
