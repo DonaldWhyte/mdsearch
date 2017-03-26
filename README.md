@@ -1,9 +1,9 @@
-#mdsearch
+# mdsearch
 
 Lightweight, header-only C++ library which implements a collection of
 multi-dimensional search structures.
 
-###Dependencies
+### Dependencies
 
 **mdsearch** requires the following header-only Boost libraries:
 * Boost.Unordered
@@ -12,7 +12,7 @@ multi-dimensional search structures.
 
 The minimum supported version of Boost is 1.41.
 
-###API
+### API
 
 Each index structure is represented as a templated class, where the template
 parameter is the dimensionality of the data the structure is storing. These
@@ -25,7 +25,7 @@ point was found and deleted successful and false if the point was not found.
 * ```bool query(point)``` -- return true if point is being stored in structure
 and false otherwise.
 
-###Examples
+### Examples
 
 The library comes with a program that generates random points and performs a
 set of correctness and performance tests on each index structure. This program
